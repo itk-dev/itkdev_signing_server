@@ -1,0 +1,86 @@
+version: '3'
+
+vars:
+  SDK_REPO: https://github.com/itk-dev/Signing-Server
+  SDK_REPO_BRANCH: feature/sdk-upgrade
+  SDK_DIR: Signing-Server
+  MAVEN_IMAGE: maven:3-eclipse-temurin-21
+  MAVEN_RUN: >-
+    docker run --rm
+    -v "{{.ROOT_DIR}}:/build"
+    -v "os2forms-signing-m2:/root/.m2"
+    -w /build
+    {{.MAVEN_IMAGE}}
+
+tasks:
+  setup:
+    desc: Clone SDK, init config, and build everything
+    cmds:
+      - task: clone
+      - task: config:init
+      - task: build:all
+
+  clone:
+    desc: Clone the Signing-Server SDK repo
+    cmds:
+      - git clone -b {{.SDK_REPO_BRANCH}} {{.SDK_REPO}} {{.SDK_DIR}}
+    status:
+      - test -d {{.SDK_DIR}}
+
+  build:sdk:
+    desc: Build SDK libraries (install to local Maven repo)
+    cmds:
+      - >-
+        {{.MAVEN_RUN}}
+        mvn -f /build/{{.SDK_DIR}}/pom.xml clean install -DskipTests
+
+  build:
+    desc: Build the os2forms signing webapp
+    cmds:
+      - >-
+        {{.MAVEN_RUN}}
+        mvn clean package -DskipTests
+
+  build:all:
+    desc: Build SDK libraries then the webapp
+    cmds:
+      - task: build:sdk
+      - task: build
+
+  dev:
+    desc: Run in development mode
+    cmds:
+      - >-
+        docker run --rm
+        -v "{{.ROOT_DIR}}:/build"
+        -v "os2forms-signing-m2:/root/.m2"
+        -w /build
+        -p 8088:8088
+        {{.MAVEN_IMAGE}}
+        mvn spring-boot:run
+
+  run:jar:
+    desc: Run the built jar directly
+    cmds:
+      - >-
+        docker run --rm
+        -v "{{.ROOT_DIR}}:/app"
+        -w /app
+        -p 8088:8088
+        eclipse-temurin:21-jre-jammy
+        java -jar target/os2forms-signing-webapp-*.jar
+        --spring.config.location=file:/app/config/application.yaml
+
+  clean:
+    desc: Maven clean
+    cmds:
+      - >-
+        {{.MAVEN_RUN}}
+        mvn clean
+
+  config:init:
+    desc: Copy example config to application.yaml
+    cmds:
+      - cp config/application.yaml.example config/application.yaml
+    status:
+      - test -f config/application.yaml

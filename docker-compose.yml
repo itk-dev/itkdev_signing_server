@@ -1,0 +1,23 @@
+services:
+  nginx:
+    image: nginxinc/nginx-unprivileged:alpine
+    depends_on:
+      - signing-server
+    ports:
+      - "8080"
+    volumes:
+      - ./.docker/templates:/etc/nginx/templates:ro
+    environment:
+      NGINX_PORT: 8080
+      NGINX_MAX_BODY_SIZE: ${MAX_UPLOAD_SIZE:-56M}
+
+  signing-server:
+    build: .
+    ports:
+      - "8088"
+    volumes:
+      - ./config/application.yaml:/app/config/application.yaml:ro
+      - ./config/certificate.p12:/app/config/certificate.p12:ro
+      - ./signed-documents:/app/signed-documents
+      - ./signers-documents:/app/signers-documents
+      - ./temp-documents:/app/temp-documents

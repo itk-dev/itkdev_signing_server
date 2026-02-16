@@ -1,0 +1,30 @@
+spring:
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+server:
+  port: 8088
+  tomcat:
+    max-http-form-post-size: 500000000
+    max-swallow-size: 500000000
+    connection-timeout: 300000
+
+nemlogin:
+  signing:
+    signing-client-url: https://underskrift.test-nemlog-in.dk/
+    validation-service-url: https://validering.test-nemlog-in.dk/api/validate
+    entity-id: YOUR_ENTITY_ID
+    keystore-path: config/certificate.p12
+    key-pair-alias: YOUR_ALIAS
+    keystore-password: YOUR_PASSWORD
+    private-key-password: YOUR_PASSWORD
+
+os2forms:
+  hash-salt: YOUR_SECRET_SALT
+  allowed-domains:
+    - os2forms.example.dk
+  signed-documents-dir: ./signed-documents/
+  source-documents-dir: ./signers-documents/
+  debug: false

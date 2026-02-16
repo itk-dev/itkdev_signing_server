@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8"/>
+    <title>Sign Document</title>
+    <style>
+      html, body { margin: 0; padding: 0; height: 100%; }
+      .signing-container { width: 100%; height: 100vh; display: flex; flex-direction: column; }
+      #signing-window { flex: 1; border: none; width: 100%; }
+    </style>
+  </head>
+  <body>
+    <script th:inline="javascript">
+      /**
+       * Handle IE - we need the startsWith function on strings
+       */
+      if (!String.prototype.startsWith) {
+        Object.defineProperty(String.prototype, 'startsWith', {
+          value: function(search) {
+            return this.substring(0, search.length) === search;
+          }
+        });
+      }
+
+      /**
+       * Called upon receiving an event from the signing client
+       * @param event the event
+       */
+      function onSigningClientMessage(event) {
+          // Signing payload produced by SP, containing signature parameters and DTBS.
+          let signingPayload = /*[[${signingPayload}]]*/ {};
+
+          const win = document.getElementById("signing-window").contentWindow;
+          const message = event.data;
+
+          // OWASP HTML5 Security - must protect calling frame unsafe web messaging
+          let origin = /*[[${signingClientUrl}]]*/ "";
+          if (!origin.startsWith(event.origin)) {
+            console.error("event '" + event.origin + "' origin rejected");
+            return;
+          }
+
+          // Message received from SigningClient when loaded and ready
+          if (message.command === "SendParameters") {
+            console.log("SP: Posting parameters to signing client");
+            const params = {
+              command: 'parameters',
+              content: signingPayload
+            };
+            win.postMessage(params, '*');
+
+            // Release memory
+            signingPayload = null;
+          }
+
+          // Message received from SigningClient when either the document has been signed,
+          // a signing error has occurred, or when the user has cancelled the signing operation.
+          if (message.command === "signedDocument" || message.command === "errorResponse" || message.command === "cancelSign") {
+            console.log("SP: Signing Result: " + message.command);
+            document.signingResult.type.value = message.command;
+            document.signingResult.result.value = message.content;
+            document.signingResult.submit();
+          }
+      }
+
+      // Listen for events from the Signing Client
+      if (window.addEventListener) {
+          window.addEventListener("message", onSigningClientMessage);
+      } else if (window.attachEvent) {
+          window.attachEvent("onmessage", onSigningClientMessage);
+      }
+    </script>
+    <div>
+      <div class="signing-container">
+        <iframe id="signing-window"
+                sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+                th:src="@{|${signingClientUrl}|}"
+                title="Sign document">
+        </iframe>
+
+        <form name="signingResult" action="/signing-result" method="post">
+          <input type="hidden" name="type" value=""/>
+          <input type="hidden" name="result" value=""/>
+          <input type="hidden" name="name" th:value="${document.name}"/>
+          <input type="hidden" name="format" th:value="${format}"/>
+          <input type="hidden" name="correlationId" th:value="${correlationId}"/>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
