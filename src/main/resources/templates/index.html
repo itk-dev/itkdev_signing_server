@@ -149,6 +149,10 @@
 
 <div class="container">
 
+  <div th:if="${testPageEnabled}" class="note">
+    <strong>Test mode enabled:</strong> You can <a href="/test">upload and sign a PDF</a> directly to verify the NemLog-In integration.
+  </div>
+
   <h2>Signing Flow</h2>
   <ol class="flow-steps">
     <li><strong>Get correlation ID</strong> &mdash; <code>GET /sign?action=getcid</code> to verify the service is running.</li>
@@ -285,10 +289,6 @@ Location: https://forms.example.com/callback?file=abc123...def.pdf&amp;action=re
     <li><strong>Filename validation</strong> &mdash; Download filenames must match <code>^[a-z0-9]{32}\.pdf$</code>.</li>
     <li><strong>Session-based state</strong> &mdash; Forward URLs are stored in the HTTP session, not in client-visible cookies or parameters.</li>
   </ul>
-
-  <div th:if="${testPageEnabled}" class="note" style="margin-top: 2rem;">
-    <strong>Test mode enabled:</strong> You can <a href="/test">upload and sign a PDF</a> directly to verify the NemLog-In integration.
-  </div>
 
 </div>
 

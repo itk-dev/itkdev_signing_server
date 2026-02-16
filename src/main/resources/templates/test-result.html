@@ -20,7 +20,7 @@
     }
     header h1 { margin: 0 0 0.5rem; font-size: 1.75rem; font-weight: 700; }
     header p { margin: 0; color: #a0aec0; font-size: 1rem; max-width: 640px; }
-    .container { max-width: 640px; margin: 0 auto; padding: 2rem 1.5rem; }
+    .container { max-width: 800px; margin: 0 auto; padding: 2rem 1.5rem; }
 
     .card {
       background: #fff;
@@ -35,6 +35,7 @@
     .error { border-left: 4px solid #e53e3e; }
 
     .card h2 { margin: 0 0 0.75rem; font-size: 1.25rem; }
+    .card h3 { margin: 1rem 0 0.5rem; font-size: 1.1rem; }
 
     .btn {
       display: inline-block;
@@ -50,6 +51,95 @@
     .btn-primary:hover { background: #2d2d4e; }
     .btn-secondary { background: #e2e8f0; color: #1a1a2e; margin-left: 0.5rem; }
     .btn-secondary:hover { background: #cbd5e0; }
+    .btn-validate { background: #3182ce; color: #fff; margin-left: 0.5rem; }
+    .btn-validate:hover { background: #2c5282; }
+
+    .actions { margin-top: 1rem; }
+
+    /* Validation report */
+    .validation-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+    }
+    .validation-card-header {
+      padding: 1rem 1.5rem;
+      background: #f7fafc;
+      border-bottom: 1px solid #e2e8f0;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+    .validation-card-body { padding: 1.5rem; }
+
+    table.validation-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+    table.validation-table th,
+    table.validation-table td {
+      text-align: left;
+      padding: 0.6rem 0.75rem;
+      border-bottom: 1px solid #edf2f7;
+      vertical-align: top;
+    }
+    table.validation-table th {
+      font-weight: 600;
+      color: #4a5568;
+      width: 180px;
+      white-space: nowrap;
+    }
+
+    .indication-passed { background: #c6f6d5; color: #22543d; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 4px; }
+    .indication-failed { background: #fed7d7; color: #742a2a; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 4px; }
+    .indication-indeterminate { background: #fefcbf; color: #744210; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 4px; }
+
+    .cert-detail { font-size: 0.85rem; color: #4a5568; margin-top: 0.25rem; }
+
+    .msg-error { color: #e53e3e; }
+    .msg-warning { color: #d97706; }
+    .msg-info { color: #3182ce; }
+
+    /* Tabs */
+    .tabs { display: flex; border-bottom: 2px solid #e2e8f0; margin-bottom: 1rem; }
+    .tab {
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      font-weight: 600;
+      color: #4a5568;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      background: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+      font-size: 0.9rem;
+    }
+    .tab.active { color: #1a1a2e; border-bottom-color: #1a1a2e; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    pre.etsi-report {
+      background: #1a1a2e;
+      color: #e2e8f0;
+      padding: 1rem 1.25rem;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 0.8rem;
+      line-height: 1.4;
+      max-height: 500px;
+    }
+
+    .validation-error-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-radius: 6px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+    }
 
     footer {
       text-align: center;
@@ -74,9 +164,15 @@
   <!-- Success -->
   <div th:if="${action == 'result'}" class="card success">
     <h2>Document Signed Successfully</h2>
-    <p>Your PDF has been signed via NemLog-In. Click below to download the signed document.</p>
-    <a th:href="@{/sign(action='download', file=${file}, leave='1')}" class="btn btn-primary">Download Signed PDF</a>
-    <a href="/test" class="btn btn-secondary">Sign Another</a>
+    <p>Your PDF has been signed via NemLog-In.</p>
+    <div class="actions">
+      <a th:href="@{/sign(action='download', file=${file}, leave='1')}" class="btn btn-primary">Download Signed PDF</a>
+      <form th:if="${validationReport == null}" action="/test/validate" method="post" style="display:inline">
+        <input type="hidden" name="file" th:value="${file}"/>
+        <button type="submit" class="btn btn-validate">Validate Signature</button>
+      </form>
+      <a href="/test" class="btn btn-secondary">Sign Another</a>
+    </div>
   </div>
 
   <!-- Cancelled -->
@@ -93,11 +189,120 @@
     <a href="/test" class="btn btn-primary">Try Again</a>
   </div>
 
+  <!-- Validation error -->
+  <div th:if="${validationError != null}" class="validation-error-box">
+    <strong>Validation failed:</strong> <span th:text="${validationError}"></span>
+  </div>
+
+  <!-- Validation report -->
+  <div th:if="${validationReport != null}" class="validation-card">
+    <div class="validation-card-header">Signature Validation Report</div>
+    <div class="validation-card-body">
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab(event, 'tab-result')">Validation Result</button>
+        <button class="tab" onclick="switchTab(event, 'tab-etsi')">ETSI Report</button>
+      </div>
+
+      <!-- Validation Result Tab -->
+      <div id="tab-result" class="tab-content active">
+        <th:block th:if="${validationReport.result != null and not #lists.isEmpty(validationReport.result.signatures)}">
+          <table class="validation-table" th:each="signature : ${validationReport.result.signatures}">
+            <!-- Indication -->
+            <tr th:if="${signature.indication != null}">
+              <th>Indication</th>
+              <td>
+                <span th:if="${signature.indication.name() == 'TOTAL_PASSED'}" class="indication-passed">PASSED</span>
+                <span th:if="${signature.indication.name() == 'TOTAL_FAILED'}" class="indication-failed">FAILED</span>
+                <span th:if="${signature.indication.name() == 'INDETERMINATE'}" class="indication-indeterminate">INDETERMINATE</span>
+              </td>
+            </tr>
+            <tr th:if="${signature.subIndication != null}">
+              <th>Sub-indication</th>
+              <td th:text="${signature.subIndication}"></td>
+            </tr>
+            <tr th:if="${signature.signatureFormat != null}">
+              <th>Signature Format</th>
+              <td th:text="${signature.signatureFormat}"></td>
+            </tr>
+            <tr th:if="${signature.signatureLevel != null}">
+              <th>Signature Level</th>
+              <td th:text="${signature.signatureLevel}"></td>
+            </tr>
+            <tr th:if="${signature.signingTime != null}">
+              <th>Signing Time</th>
+              <td th:text="${signature.signingTime}"></td>
+            </tr>
+            <tr th:if="${signature.signedBy != null}">
+              <th>Signed By</th>
+              <td th:text="${signature.signedBy}"></td>
+            </tr>
+            <tr th:if="${signature.email != null}">
+              <th>Email</th>
+              <td th:text="${signature.email}"></td>
+            </tr>
+            <!-- Certificate chain -->
+            <tr th:if="${not #lists.isEmpty(signature.certificateChain)}" th:each="certificate, iter : ${signature.certificateChain}">
+              <th>
+                <span th:if="${iter.index == 0}">Signing Certificate</span>
+                <span th:if="${iter.index == 1}">Issuing CA</span>
+                <span th:if="${iter.index > 1}">Issued By</span>
+              </th>
+              <td>
+                <div th:text="${certificate.subjectDN}"></div>
+                <div th:if="${iter.index == 0}" class="cert-detail">
+                  <div th:if="${certificate.serialNumber != null}">Serial: <span th:text="${certificate.serialNumber}"></span></div>
+                  <div th:if="${certificate.notBefore != null or certificate.notAfter != null}">
+                    Valid: <span th:if="${certificate.notBefore != null}" th:text="${certificate.notBefore}"></span>
+                    — <span th:if="${certificate.notAfter != null}" th:text="${certificate.notAfter}"></span>
+                  </div>
+                  <div th:if="${not #lists.isEmpty(certificate.policies)}">
+                    Policies: <span th:each="policy, pIter : ${certificate.policies}" th:text="${!pIter.last ? policy + ', ' : policy}"></span>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            <!-- Errors / Warnings / Infos -->
+            <tr th:if="${not #lists.isEmpty(signature.errors)}" th:each="error : ${signature.errors}">
+              <th class="msg-error">Error</th>
+              <td class="msg-error" th:text="${error}"></td>
+            </tr>
+            <tr th:if="${not #lists.isEmpty(signature.warnings)}" th:each="warning : ${signature.warnings}">
+              <th class="msg-warning">Warning</th>
+              <td class="msg-warning" th:text="${warning}"></td>
+            </tr>
+            <tr th:if="${not #lists.isEmpty(signature.infos)}" th:each="info : ${signature.infos}">
+              <th class="msg-info">Info</th>
+              <td class="msg-info" th:text="${info}"></td>
+            </tr>
+          </table>
+        </th:block>
+        <p th:if="${validationReport.result == null or #lists.isEmpty(validationReport.result.signatures)}">
+          No signature information returned by the validation service.
+        </p>
+      </div>
+
+      <!-- ETSI Report Tab -->
+      <div id="tab-etsi" class="tab-content">
+        <pre th:if="${validationReport.etsiReport != null}" class="etsi-report"><code th:text="${validationReport.etsiReport}"></code></pre>
+        <p th:if="${validationReport.etsiReport == null}">No ETSI report available.</p>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <footer>
   <a href="/">Back to API Reference</a>
 </footer>
+
+<script>
+  function switchTab(event, tabId) {
+    document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); });
+    document.querySelectorAll('.tab').forEach(function(el) { el.classList.remove('active'); });
+    document.getElementById(tabId).classList.add('active');
+    event.currentTarget.classList.add('active');
+  }
+</script>
 
 </body>
 </html>

@@ -10,6 +10,9 @@ import dk.gov.nemlogin.signing.model.SignersDocument;
 import dk.gov.nemlogin.signing.model.SignersDocumentFile;
 import dk.gov.nemlogin.signing.service.SigningPayloadService;
 import dk.gov.nemlogin.signing.service.TransformationContext;
+import dk.gov.nemlogin.signing.validation.model.SignatureValidationContext;
+import dk.gov.nemlogin.signing.validation.model.ValidationReport;
+import dk.gov.nemlogin.signing.validation.service.SignatureValidationService;
 import dk.itkdev.signing.config.ItkdevProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,19 +42,25 @@ public class SigningService {
     private final String entityID;
     private final ItkdevProperties properties;
     private final RestTemplate restTemplate;
+    private final SignatureValidationService signatureValidationService;
+    private final SignatureValidationContext.Builder signatureValidationContextBuilder;
 
     public SigningService(
             SigningPayloadService signingPayloadService,
             SignatureKeys signatureKeys,
             @Qualifier("signingClientUrl") String signingClientUrl,
             @Qualifier("entityID") String entityID,
-            ItkdevProperties properties) {
+            ItkdevProperties properties,
+            SignatureValidationService signatureValidationService,
+            SignatureValidationContext.Builder signatureValidationContextBuilder) {
         this.signingPayloadService = signingPayloadService;
         this.signatureKeys = signatureKeys;
         this.signingClientUrl = signingClientUrl;
         this.entityID = entityID;
         this.properties = properties;
         this.restTemplate = new RestTemplate();
+        this.signatureValidationService = signatureValidationService;
+        this.signatureValidationContextBuilder = signatureValidationContextBuilder;
     }
 
     public String getSigningClientUrl() {
@@ -230,6 +239,26 @@ public class SigningService {
 
         String hash = file.substring(0, 32);
         return Paths.get(properties.getSignedDocumentsDir()).resolve(hash + "-signed.pdf");
+    }
+
+    /**
+     * Validate a signed document by calling the NemLog-In Signature Validation API.
+     *
+     * @param file the original filename (e.g. "91d56055f7274fdeb327077d1e32e5d1.pdf")
+     * @return the validation report
+     */
+    public ValidationReport validateSignedDocument(String file) throws IOException {
+        Path signedPath = getSignedDocumentPath(file);
+        byte[] pdfData = Files.readAllBytes(signedPath);
+
+        String signedFilename = file.replace(".pdf", "") + "-signed.pdf";
+
+        SignatureValidationContext ctx = signatureValidationContextBuilder.copy()
+                .setDocumentName(signedFilename)
+                .setDocumentData(pdfData)
+                .build();
+
+        return signatureValidationService.validate(ctx);
     }
 
     public void debug(String message, Object... args) {

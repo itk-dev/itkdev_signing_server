@@ -1,6 +1,7 @@
 package dk.itkdev.signing.controller;
 
 import dk.gov.nemlogin.signing.dto.SigningPayloadDTO;
+import dk.gov.nemlogin.signing.validation.model.ValidationReport;
 import dk.itkdev.signing.config.ItkdevProperties;
 import dk.itkdev.signing.service.SigningService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -93,6 +94,29 @@ public class TestController {
 
         model.addAttribute("file", file);
         model.addAttribute("action", action);
+
+        return "test-result";
+    }
+
+    @PostMapping("/test/validate")
+    public String testValidate(
+            @RequestParam String file,
+            Model model) {
+
+        if (!properties.isTestPageEnabled()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+
+        model.addAttribute("file", file);
+        model.addAttribute("action", "result");
+
+        try {
+            ValidationReport validationReport = signingService.validateSignedDocument(file);
+            model.addAttribute("validationReport", validationReport);
+        } catch (Exception e) {
+            LOG.error("Error validating signed document: {}", e.getMessage(), e);
+            model.addAttribute("validationError", e.getMessage());
+        }
 
         return "test-result";
     }
