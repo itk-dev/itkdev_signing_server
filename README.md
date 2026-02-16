@@ -143,24 +143,32 @@ The signing result callback from the NemLog-In iframe is handled at
 
 ## Signing Flow
 
-```
-1. Client → GET /sign?action=getcid
-   ← {"cid": "uuid"}
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Server
+    participant Browser
+    participant NemLog-In
 
-2. Client → GET /sign?action=sign&uri=<b64>&forward_url=<b64>&hash=<sha1>
-   Server: decode URI → validate hash → validate domain → fetch PDF
-   Server: generate signing payload via NemLog-In SDK
-   ← Render signing page (iframe loads NemLog-In signing client)
+    Client->>Server: GET /sign?action=getcid
+    Server-->>Client: {"cid": "uuid"}
 
-3. User authenticates with MitID in iframe and signs document
-   iframe → postMessage → JavaScript → form POST to /signing-result
+    Client->>Server: GET /sign?action=sign&uri={b64}&forward_url={b64}&hash={sha1}
+    Note right of Server: Validate hash & domain,<br/>fetch PDF, generate payload
+    Server-->>Browser: sign.html (signing page)
 
-4. Server: decode signed document → save as {hash}-signed.pdf
-   Server: read forward_url from session → validate domain
-   ← HTTP 302 redirect to {forward_url}?file={hash}.pdf&action=result
+    Browser->>NemLog-In: Load iframe
+    NemLog-In->>Browser: postMessage("SendParameters")
+    Browser->>NemLog-In: postMessage(signingPayload)
+    Note right of NemLog-In: User signs with MitID
+    NemLog-In->>Browser: postMessage("signedDocument")
 
-5. Client → GET /sign?action=download&file={hash}.pdf&leave=0
-   ← Binary PDF, file deleted after sending
+    Browser->>Server: POST /signing-result
+    Note right of Server: Save signed PDF,<br/>read forward_url from session
+    Server-->>Browser: 302 redirect to forward_url
+
+    Client->>Server: GET /sign?action=download&file={name}
+    Server-->>Client: Binary PDF stream
 ```
 
 ## Deployment
@@ -252,4 +260,4 @@ After starting the application, verify it works:
 
 ## License
 
-TBD
+This project is licensed under the [Mozilla Public License 2.0](LICENSE).
