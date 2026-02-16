@@ -1,4 +1,4 @@
-# OS2Forms Signing Webapp Configuration
+# ITKDev Signing Server Configuration
 # Copy this file to config/application.yaml and update the values.
 
 spring:

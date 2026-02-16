@@ -13,7 +13,7 @@ COPY src/ src/
 RUN --mount=type=cache,target=/root/.m2 \
     mvn clean package -DskipTests
 
-# Stage 3: Runtime
+# Stage 2: Runtime
 FROM eclipse-temurin:21-jre-jammy AS final
 WORKDIR /app
 
