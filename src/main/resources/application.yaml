@@ -21,10 +21,10 @@ nemlogin:
     keystore-password: YOUR_PASSWORD
     private-key-password: YOUR_PASSWORD
 
-os2forms:
+itkdev:
   hash-salt: YOUR_SECRET_SALT
   allowed-domains:
-    - os2forms.example.dk
+    - example.dk
   signed-documents-dir: ./signed-documents/
   source-documents-dir: ./signers-documents/
   debug: false

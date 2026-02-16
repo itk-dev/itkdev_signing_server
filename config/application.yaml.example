@@ -36,15 +36,15 @@ nemlogin:
     # Private key password
     private-key-password: YOUR_PASSWORD
 
-# OS2Forms application configuration
-os2forms:
+# Application configuration
+itkdev:
   # Salt used for SHA-1 hash validation of forward URLs.
-  # Must match the salt configured in the OS2Forms digital_signature module.
+  # Must match the salt configured in the calling application.
   hash-salt: YOUR_SECRET_SALT
   # List of allowed domains for external PDF URLs and forward URLs.
   # If empty, all domains are allowed (not recommended for production).
   allowed-domains:
-    - os2forms.example.dk
+    - example.dk
   # Directory for storing signed PDF documents
   signed-documents-dir: /app/signed-documents/
   # Directory for storing fetched source PDF documents

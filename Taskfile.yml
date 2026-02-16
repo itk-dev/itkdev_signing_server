@@ -8,7 +8,7 @@ vars:
   MAVEN_RUN: >-
     docker run --rm
     -v "{{.ROOT_DIR}}:/build"
-    -v "os2forms-signing-m2:/root/.m2"
+    -v "itkdev-signing-m2:/root/.m2"
     -w /build
     {{.MAVEN_IMAGE}}
 
@@ -52,7 +52,7 @@ tasks:
       - touch .sdk-built
 
   build:
-    desc: Build the os2forms signing webapp
+    desc: Build the signing webapp
     deps: [build:sdk]
     cmds:
       - >-
@@ -66,7 +66,7 @@ tasks:
       - >-
         docker run --rm
         -v "{{.ROOT_DIR}}:/build"
-        -v "os2forms-signing-m2:/root/.m2"
+        -v "itkdev-signing-m2:/root/.m2"
         -w /build
         -p 8088:8088
         {{.MAVEN_IMAGE}}
@@ -81,7 +81,7 @@ tasks:
         -w /app
         -p 8088:8088
         eclipse-temurin:21-jre-jammy
-        java -jar target/os2forms-signing-webapp-*.jar
+        java -jar target/itkdev-signing-webapp-*.jar
         --spring.config.location=file:/app/config/application.yaml
 
   clean:

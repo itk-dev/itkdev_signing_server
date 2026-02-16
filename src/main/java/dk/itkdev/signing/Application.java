@@ -1,4 +1,4 @@
-package dk.os2forms.signing;
+package dk.itkdev.signing;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.boot.SpringApplication;

@@ -1,4 +1,4 @@
-package dk.os2forms.signing.config;
+package dk.itkdev.signing.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-@ConfigurationProperties(prefix = "os2forms")
-public class Os2formsProperties {
+@ConfigurationProperties(prefix = "itkdev")
+public class ItkdevProperties {
 
     private String hashSalt;
     private List<String> allowedDomains = new ArrayList<>();

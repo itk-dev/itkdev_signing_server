@@ -1,7 +1,7 @@
-package dk.os2forms.signing.controller;
+package dk.itkdev.signing.controller;
 
 import dk.gov.nemlogin.signing.dto.SigningPayloadDTO;
-import dk.os2forms.signing.service.SigningService;
+import dk.itkdev.signing.service.SigningService;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +32,11 @@ public class SigningController {
 
     public SigningController(SigningService signingService) {
         this.signingService = signingService;
+    }
+
+    @GetMapping("/")
+    public String index() {
+        return "index";
     }
 
     @GetMapping("/sign")

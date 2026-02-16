@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NemLog-In Signing Service — API Reference</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: #1a1a2e;
+      background: #f8f9fa;
+      line-height: 1.6;
+    }
+    header {
+      background: #1a1a2e;
+      color: #fff;
+      padding: 2.5rem 1.5rem;
+    }
+    header h1 { margin: 0 0 0.5rem; font-size: 1.75rem; font-weight: 700; }
+    header p { margin: 0; color: #a0aec0; font-size: 1rem; max-width: 640px; }
+    .container { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+    h2 {
+      font-size: 1.35rem;
+      margin: 2.5rem 0 1rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 2px solid #e2e8f0;
+    }
+    h3 { font-size: 1.1rem; margin: 1.5rem 0 0.5rem; }
+
+    .endpoint {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+    }
+    .endpoint-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem 1.25rem;
+      background: #f7fafc;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .method {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      color: #fff;
+    }
+    .method-get { background: #38a169; }
+    .method-post { background: #3182ce; }
+    .endpoint-path { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; font-weight: 600; }
+    .endpoint-body { padding: 1.25rem; }
+    .endpoint-body p { margin: 0 0 0.75rem; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      margin-bottom: 0.75rem;
+    }
+    th, td { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid #edf2f7; }
+    th { font-weight: 600; color: #4a5568; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    td code {
+      background: #edf2f7;
+      padding: 0.15rem 0.4rem;
+      border-radius: 3px;
+      font-size: 0.85rem;
+    }
+
+    pre {
+      background: #1a1a2e;
+      color: #e2e8f0;
+      padding: 1rem 1.25rem;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      margin: 0.75rem 0;
+    }
+    pre code { background: none; padding: 0; color: inherit; }
+
+    .note {
+      background: #ebf8ff;
+      border-left: 4px solid #3182ce;
+      padding: 0.75rem 1rem;
+      border-radius: 0 6px 6px 0;
+      font-size: 0.9rem;
+      margin: 1rem 0;
+    }
+
+    .flow-steps {
+      list-style: none;
+      padding: 0;
+      counter-reset: step;
+    }
+    .flow-steps li {
+      counter-increment: step;
+      padding: 0.5rem 0 0.5rem 2.5rem;
+      position: relative;
+    }
+    .flow-steps li::before {
+      content: counter(step);
+      position: absolute;
+      left: 0;
+      top: 0.5rem;
+      width: 1.6rem;
+      height: 1.6rem;
+      background: #1a1a2e;
+      color: #fff;
+      border-radius: 50%;
+      font-size: 0.8rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .error-box {
+      background: #fff5f5;
+      border: 1px solid #fed7d7;
+      border-radius: 6px;
+      padding: 1rem 1.25rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem 1.5rem;
+      color: #a0aec0;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div style="max-width:960px;margin:0 auto;">
+    <h1>NemLog-In Signing Service</h1>
+    <p>A stateless signing adapter for NemLog-In digital signatures. Receives PDF references, presents the signing iframe, and redirects back after signing.</p>
+  </div>
+</header>
+
+<div class="container">
+
+  <h2>Signing Flow</h2>
+  <ol class="flow-steps">
+    <li><strong>Get correlation ID</strong> &mdash; <code>GET /sign?action=getcid</code> to verify the service is running.</li>
+    <li><strong>Initiate signing</strong> &mdash; <code>GET /sign?action=sign</code> with the PDF URI, forward URL, and hash. The service fetches the PDF and presents the NemLog-In signing iframe.</li>
+    <li><strong>Signing completes</strong> &mdash; NemLog-In posts the result to <code>POST /signing-result</code> (handled internally).</li>
+    <li><strong>Redirect back</strong> &mdash; The user is redirected via <code>GET /sign?action=result</code> (or <code>action=cancel</code>) to the original forward URL with the signed filename.</li>
+    <li><strong>Download signed PDF</strong> &mdash; <code>GET /sign?action=download</code> to retrieve the signed document.</li>
+  </ol>
+
+  <h2>API Endpoints</h2>
+
+  <!-- getcid -->
+  <div class="endpoint">
+    <div class="endpoint-header">
+      <span class="method method-get">GET</span>
+      <span class="endpoint-path">/sign?action=getcid</span>
+    </div>
+    <div class="endpoint-body">
+      <p>Health check. Returns a unique correlation ID to confirm the service is running.</p>
+      <h3>Example</h3>
+      <pre><code>curl https://sign.example.com/sign?action=getcid</code></pre>
+      <h3>Response</h3>
+      <pre><code>{"cid": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"}</code></pre>
+    </div>
+  </div>
+
+  <!-- sign -->
+  <div class="endpoint">
+    <div class="endpoint-header">
+      <span class="method method-get">GET</span>
+      <span class="endpoint-path">/sign?action=sign</span>
+    </div>
+    <div class="endpoint-body">
+      <p>Initiate document signing. Fetches the PDF, generates a signing payload, and renders the NemLog-In signing iframe.</p>
+      <h3>Parameters</h3>
+      <table>
+        <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>uri</code></td><td>string</td><td>Base64-encoded URL of the PDF to sign.</td></tr>
+          <tr><td><code>forward_url</code></td><td>string</td><td>Base64-encoded URL to redirect to after signing.</td></tr>
+          <tr><td><code>hash</code></td><td>string</td><td>SHA-1 HMAC: <code>sha1(salt + forward_url)</code> for request validation.</td></tr>
+        </tbody>
+      </table>
+      <h3>Example</h3>
+      <pre><code>curl "https://sign.example.com/sign?action=sign&amp;uri=BASE64_PDF_URL&amp;forward_url=BASE64_CALLBACK&amp;hash=SHA1_HASH"</code></pre>
+      <h3>Response</h3>
+      <p>HTML page with the NemLog-In signing iframe (not a JSON response).</p>
+    </div>
+  </div>
+
+  <!-- result / cancel -->
+  <div class="endpoint">
+    <div class="endpoint-header">
+      <span class="method method-get">GET</span>
+      <span class="endpoint-path">/sign?action=result</span>
+    </div>
+    <div class="endpoint-body">
+      <p>Called after signing completes. Redirects (302) to the forward URL stored in the session, appending the filename and action.</p>
+      <h3>Parameters</h3>
+      <table>
+        <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>file</code></td><td>string</td><td>Signed document filename (32-char hex + <code>.pdf</code>).</td></tr>
+        </tbody>
+      </table>
+      <h3>Response</h3>
+      <pre><code>HTTP/1.1 302 Found
+Location: https://forms.example.com/callback?file=abc123...def.pdf&amp;action=result</code></pre>
+      <div class="note">
+        <code>action=cancel</code> works identically but appends <code>&amp;action=cancel</code> to the redirect URL.
+      </div>
+    </div>
+  </div>
+
+  <!-- download -->
+  <div class="endpoint">
+    <div class="endpoint-header">
+      <span class="method method-get">GET</span>
+      <span class="endpoint-path">/sign?action=download</span>
+    </div>
+    <div class="endpoint-body">
+      <p>Download the signed PDF. By default the file is deleted from the server after download.</p>
+      <h3>Parameters</h3>
+      <table>
+        <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>file</code></td><td>string</td><td>Signed document filename (must match <code>^[a-z0-9]{32}\.pdf$</code>).</td></tr>
+          <tr><td><code>leave</code></td><td>string</td><td><code>0</code> = delete after download (default), <code>1</code> = keep file on server.</td></tr>
+        </tbody>
+      </table>
+      <h3>Example</h3>
+      <pre><code>curl -O "https://sign.example.com/sign?action=download&amp;file=abc123...def.pdf&amp;leave=0"</code></pre>
+      <h3>Response</h3>
+      <p>Binary PDF stream with <code>Content-Type: application/pdf</code>.</p>
+    </div>
+  </div>
+
+  <!-- signing-result -->
+  <div class="endpoint">
+    <div class="endpoint-header">
+      <span class="method method-post">POST</span>
+      <span class="endpoint-path">/signing-result</span>
+    </div>
+    <div class="endpoint-body">
+      <p>Internal callback from the NemLog-In signing iframe. Not called directly by API consumers.</p>
+      <h3>Parameters (form POST)</h3>
+      <table>
+        <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>type</code></td><td>string</td><td><code>signedDocument</code>, <code>errorResponse</code>, or <code>cancelSign</code>.</td></tr>
+          <tr><td><code>result</code></td><td>string</td><td>Signed document content or error details from NemLog-In.</td></tr>
+          <tr><td><code>name</code></td><td>string</td><td>Document filename.</td></tr>
+          <tr><td><code>format</code></td><td>string</td><td>Signature format (e.g. <code>PAdES</code>).</td></tr>
+          <tr><td><code>correlationId</code></td><td>string</td><td>Correlation ID for tracing.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <h2>Error Responses</h2>
+  <div class="error-box">
+    <p>All errors are returned as JSON with HTTP 200:</p>
+    <pre><code>{
+  "error": true,
+  "message": "Description of what went wrong",
+  "code": 0
+}</code></pre>
+  </div>
+
+  <h2>Security</h2>
+  <ul>
+    <li><strong>Hash validation</strong> &mdash; Every <code>sign</code> request requires a SHA-1 hash computed as <code>sha1(salt + forward_url)</code>. The salt is configured server-side.</li>
+    <li><strong>Domain whitelisting</strong> &mdash; Both PDF source URLs and forward URLs are validated against an allowlist of domains.</li>
+    <li><strong>Filename validation</strong> &mdash; Download filenames must match <code>^[a-z0-9]{32}\.pdf$</code>.</li>
+    <li><strong>Session-based state</strong> &mdash; Forward URLs are stored in the HTTP session, not in client-visible cookies or parameters.</li>
+  </ul>
+
+</div>
+
+<footer>
+  NemLog-In Signing Service &mdash; Powered by NemLog-In SignSDK
+</footer>
+
+</body>
+</html>

@@ -11,12 +11,12 @@
         <relativePath/>
     </parent>
 
-    <groupId>dk.os2forms</groupId>
-    <artifactId>os2forms-signing-webapp</artifactId>
+    <groupId>dk.itkdev</groupId>
+    <artifactId>itkdev-signing-webapp</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <name>OS2Forms Signing Webapp</name>
-    <description>Standalone signing proxy for OS2Forms using NemLog-In SignSDK</description>
+    <name>ITKDev Signing Webapp</name>
+    <description>Standalone signing proxy using NemLog-In SignSDK</description>
 
     <properties>
         <java.version>17</java.version>

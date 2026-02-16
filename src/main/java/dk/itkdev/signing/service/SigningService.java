@@ -1,4 +1,4 @@
-package dk.os2forms.signing.service;
+package dk.itkdev.signing.service;
 
 import dk.gov.nemlogin.signing.dto.SigningPayloadDTO;
 import dk.gov.nemlogin.signing.format.SignatureFormat;
@@ -10,7 +10,7 @@ import dk.gov.nemlogin.signing.model.SignersDocument;
 import dk.gov.nemlogin.signing.model.SignersDocumentFile;
 import dk.gov.nemlogin.signing.service.SigningPayloadService;
 import dk.gov.nemlogin.signing.service.TransformationContext;
-import dk.os2forms.signing.config.Os2formsProperties;
+import dk.itkdev.signing.config.ItkdevProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -37,7 +37,7 @@ public class SigningService {
     private final SignatureKeys signatureKeys;
     private final String signingClientUrl;
     private final String entityID;
-    private final Os2formsProperties properties;
+    private final ItkdevProperties properties;
     private final RestTemplate restTemplate;
 
     public SigningService(
@@ -45,7 +45,7 @@ public class SigningService {
             SignatureKeys signatureKeys,
             @Qualifier("signingClientUrl") String signingClientUrl,
             @Qualifier("entityID") String entityID,
-            Os2formsProperties properties) {
+            ItkdevProperties properties) {
         this.signingPayloadService = signingPayloadService;
         this.signatureKeys = signatureKeys;
         this.signingClientUrl = signingClientUrl;

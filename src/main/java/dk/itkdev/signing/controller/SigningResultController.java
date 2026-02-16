@@ -1,6 +1,6 @@
-package dk.os2forms.signing.controller;
+package dk.itkdev.signing.controller;
 
-import dk.os2forms.signing.service.SigningService;
+import dk.itkdev.signing.service.SigningService;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,7 +78,7 @@ public class SigningResultController {
         // Clear session
         clearSession(session);
 
-        // Redirect to OS2Forms with result
+        // Redirect to caller with result
         String separator = forwardUrl.contains("?") ? "&" : "?";
         String redirectUrl = forwardUrl + separator + "file=" + filename + "&action=result";
 
