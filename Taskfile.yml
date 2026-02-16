@@ -60,6 +60,12 @@ tasks:
         {{.MAVEN_RUN}}
         mvn clean package -DskipTests
 
+  build:all:
+    desc: Build SDK and webapp
+    cmds:
+      - task: build:sdk:force
+      - task: build
+
   dev:
     desc: Run in development mode
     deps: [build:sdk]

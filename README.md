@@ -114,12 +114,15 @@ Run `task --list` to see all available tasks:
 | `task setup` | Clone SDK, init config, and build everything |
 | `task clone` | Clone the Signing-Server SDK repo |
 | `task build:sdk` | Build SDK libraries (install to local Maven repo) |
+| `task build:sdk:force` | Force rebuild SDK libraries (ignores cache) |
 | `task build` | Build the webapp |
 | `task build:all` | Build SDK + webapp |
 | `task dev` | Run in development mode (`mvn spring-boot:run`) |
 | `task run:jar` | Run the built JAR directly |
 | `task clean` | Maven clean |
 | `task config:init` | Copy example config to `application.yaml` |
+| `task docker:build` | Build the Docker image |
+| `task docker:push VERSION=x.y.z` | Build and push Docker image to GHCR |
 
 ## API
 
@@ -173,9 +176,57 @@ sequenceDiagram
 
 ## Deployment
 
-### Docker
+### Docker Image
 
-Build and run with Docker Compose:
+The Docker image is published to GitHub Container Registry:
+
+```
+ghcr.io/itk-dev/signing-server
+```
+
+#### Using a Pre-Built Image
+
+Pull and run the image directly without building from source:
+
+```bash
+docker pull ghcr.io/itk-dev/signing-server:latest
+docker run --rm -p 8088:8088 \
+  -v ./config/application.yaml:/app/config/application.yaml:ro \
+  -v ./config/certificate.p12:/app/config/certificate.p12:ro \
+  -v ./signed-documents:/app/signed-documents \
+  -v ./signers-documents:/app/signers-documents \
+  -v ./temp-documents:/app/temp-documents \
+  ghcr.io/itk-dev/signing-server:latest
+```
+
+#### Building the Image Locally
+
+Build and optionally push using Task:
+
+```bash
+task docker:build                    # Build image locally
+task docker:push VERSION=1.0.0      # Build, tag, and push to GHCR
+```
+
+Or build directly with Docker:
+
+```bash
+docker build -t ghcr.io/itk-dev/signing-server:latest .
+```
+
+**NOTE:** The SDK source (`Signing-Server/`) must be present before building the
+image. Run `task clone` first if it hasn't been cloned yet.
+
+#### Image Architecture
+
+The Dockerfile uses a two-stage build:
+
+1. **build** — Builds the SDK libraries and the webapp (`maven:3-eclipse-temurin-21`)
+2. **final** — Runtime with minimal JRE image (`eclipse-temurin:21-jre-jammy`), runs as non-root user (`appuser`) on port 8088
+
+### Docker Compose
+
+Build and run with Docker Compose for local development:
 
 ```bash
 docker compose build
@@ -191,6 +242,23 @@ The service is accessible through the nginx reverse proxy on port **8080**.
 | `config/application.yaml` | `/app/config/application.yaml` | Application configuration |
 | `config/certificate.p12` | `/app/config/certificate.p12` | OCES3 certificate |
 
+**Optional volumes (document storage):**
+
+| Host Path | Container Path | Description |
+|-----------|---------------|-------------|
+| `signed-documents/` | `/app/signed-documents` | Signed PDF output |
+| `signers-documents/` | `/app/signers-documents` | Fetched source PDFs |
+| `temp-documents/` | `/app/temp-documents` | Temporary files during signing |
+
+**Environment variables (`.env`):**
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `COMPOSE_PROJECT_NAME` | Docker Compose project name | `sign-server` |
+| `COMPOSE_DOMAIN` | Domain for Traefik routing (local dev) | `sign.local.itkdev.dk` |
+| `MAX_UPLOAD_SIZE` | Max upload size for nginx and Spring | `56M` |
+| `MAX_UPLOAD_SIZE_BYTES` | Max upload size in bytes for Tomcat | `58720256` |
+
 ### Production (Traefik)
 
 For production with Traefik and HTTPS, set the required environment variables
@@ -204,15 +272,7 @@ docker compose -f docker-compose.server.yml build
 docker compose -f docker-compose.server.yml up -d
 ```
 
-### Architecture
-
-The Docker image uses a three-stage build:
-
-1. **build-sdk** — Builds the NemLog-In SDK libraries (`eclipse-temurin:21-jdk-jammy`)
-2. **build-app** — Builds the webapp against SDK JARs (`eclipse-temurin:21-jdk-jammy`)
-3. **final** — Runtime with minimal JRE image (`eclipse-temurin:21-jre-jammy`), runs as non-root user on port 8088
-
-Nginx sits in front as a reverse proxy on port 8080.
+Nginx sits in front of the signing server as a reverse proxy on port 8080.
 
 ## Test Signing Page
 
