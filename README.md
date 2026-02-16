@@ -1,21 +1,17 @@
-# OS2Forms Signing Webapp
+# ITKDev Signing Server
 
-Standalone Spring Boot application for digital document signing in the
-[OS2Forms](https://os2forms.os2.eu/) ecosystem. Replaces the previous
-Drupal-based proxy module
-([os2forms_dig_sig_server](https://github.com/MitID-Digital-Signature/os2forms_dig_sig_server/))
-by combining the proxy logic with the
-[NemLog-In Signing SDK](https://github.com/MitID-Digital-Signature/Signing-Server.git)
-into a single service.
+Standalone Spring Boot application for digital document signing via
+[NemLog-In](https://www.nemlog-in.dk/). Acts as a stateless adapter: receives
+PDF references over a simple HTTP API, presents the NemLog-In signing iframe,
+and redirects back to the caller after signing.
 
 ```
-Previous:  OS2Forms → Drupal proxy → Java Signing-Server → NemLog-In
-Now:       OS2Forms → os2forms-signing-webapp (this project) → NemLog-In
+Calling application → ITKDev Signing Server (this project) → NemLog-In
 ```
 
-The API is backward-compatible with the
-[OS2Forms digital_signature client module](https://github.com/OS2Forms/os2forms/tree/develop/modules/os2forms_digital_signature),
-requiring no changes on the OS2Forms side.
+Any application that can make HTTP requests can integrate with the signing
+server. For an example, see the
+[OS2Forms digital_signature module](https://github.com/OS2Forms/os2forms/tree/develop/modules/os2forms_digital_signature).
 
 ## Requirements
 
@@ -35,7 +31,7 @@ builds.
 
 ```bash
 git clone <REPOSITORY_URL>
-cd os2forms-signing-webapp
+cd itkdev-signing-server
 ```
 
 ### 2. First-Time Setup
@@ -49,13 +45,13 @@ task setup
 
 This performs three steps:
 
-1. Clones the [NemLog-In Signing SDK](https://github.com/MitID-Digital-Signature/Signing-Server.git) into `Signing-Server/`
+1. Clones the [NemLog-In Signing SDK](https://github.com/itk-dev/Signing-Server.git) into `Signing-Server/`
 2. Copies `config/application.yaml.example` to `config/application.yaml`
 3. Builds the SDK libraries and the webapp
 
 ### 3. Configure
 
-Edit `config/application.yaml` with your NemLog-In credentials and OS2Forms
+Edit `config/application.yaml` with your NemLog-In credentials and application
 settings:
 
 ```bash
@@ -95,15 +91,16 @@ Configuration is split into two namespaces in `config/application.yaml`:
 | Test | `https://underskrift.test-nemlog-in.dk/` | `https://validering.test-nemlog-in.dk/api/validate` |
 | Production | `https://underskrift.nemlog-in.dk/` | `https://validering.nemlog-in.dk/api/validate` |
 
-### Application (`os2forms.*`)
+### Application (`itkdev.*`)
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `hash-salt` | Salt for SHA-1 hash validation of forward URLs. Must match the OS2Forms digital_signature module. | *(required)* |
+| `hash-salt` | Salt for SHA-1 hash validation of forward URLs. Must match the calling application. | *(required)* |
 | `allowed-domains` | List of allowed domains for PDF URLs and forward URLs. | `[]` |
 | `signed-documents-dir` | Directory for storing signed PDFs. | `./signed-documents/` |
 | `source-documents-dir` | Directory for storing fetched source PDFs. | `./signers-documents/` |
 | `debug` | Enable debug logging. | `false` |
+| `test-page-enabled` | Enable the `/test` page for manual signing verification. Do **not** enable in production. | `false` |
 
 **NOTE:** If `allowed-domains` is empty, all domains are allowed. This is not
 recommended for production.
@@ -126,76 +123,43 @@ Run `task --list` to see all available tasks:
 
 ## API
 
+The application serves a built-in API reference at the landing page (`/`). Open
+the running service in a browser to see full endpoint documentation, parameter
+descriptions, and the signing flow diagram.
+
 All actions are served from a single endpoint `GET /sign` with an `action`
-query parameter. The signing result callback is handled at `POST /signing-result`.
+query parameter:
 
-### Endpoints
+| Action | Description |
+|--------|-------------|
+| `getcid` | Health check — returns a correlation ID |
+| `sign` | Initiate signing (requires `uri`, `forward_url`, `hash`) |
+| `result` | Redirect to `forward_url` after successful signing |
+| `cancel` | Redirect to `forward_url` after cancellation |
+| `download` | Download the signed PDF |
 
-#### `GET /sign?action=getcid`
-
-Returns a new correlation ID.
-
-**Response:**
-
-```json
-{"cid": "7f03374d-5488-49cc-b952-0abfa297e3df"}
-```
-
-#### `GET /sign?action=sign&uri=<BASE64>&forward_url=<BASE64>&hash=<SHA1>`
-
-Initiates the signing flow. Fetches the PDF, generates a signing payload, and
-renders the NemLog-In signing iframe.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `uri` | string | Base64-encoded URL to the PDF file |
-| `forward_url` | string | Base64-encoded redirect URL for after signing |
-| `hash` | string | SHA-1 hash of `<SALT>` + decoded `forward_url` |
-
-#### `GET /sign?action=result&file=<FILENAME>`
-
-Redirects to the `forward_url` with `?file=<FILENAME>&action=result`.
-
-#### `GET /sign?action=cancel&file=<FILENAME>`
-
-Redirects to the `forward_url` with `?file=<FILENAME>&action=cancel`.
-
-#### `GET /sign?action=download&file=<FILENAME>&leave=<0|1>`
-
-Downloads the signed PDF as `application/pdf`.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `file` | string | Filename (must match `^[a-z0-9]{32}\.pdf$`) |
-| `leave` | string | `1` to keep file on server, `0` to delete after download |
-
-### Error Response Format
-
-All errors are returned as JSON:
-
-```json
-{"error": true, "message": "Description of the error", "code": 0}
-```
+The signing result callback from the NemLog-In iframe is handled at
+`POST /signing-result`.
 
 ## Signing Flow
 
 ```
-1. OS2Forms → GET /sign?action=getcid
+1. Client → GET /sign?action=getcid
    ← {"cid": "uuid"}
 
-2. OS2Forms → GET /sign?action=sign&uri=<b64>&forward_url=<b64>&hash=<sha1>
-   App: decode URI → validate hash → validate domain → fetch PDF
-   App: generate signing payload via NemLog-In SDK
+2. Client → GET /sign?action=sign&uri=<b64>&forward_url=<b64>&hash=<sha1>
+   Server: decode URI → validate hash → validate domain → fetch PDF
+   Server: generate signing payload via NemLog-In SDK
    ← Render signing page (iframe loads NemLog-In signing client)
 
 3. User authenticates with MitID in iframe and signs document
    iframe → postMessage → JavaScript → form POST to /signing-result
 
-4. App: decode signed document → save as {hash}-signed.pdf
-   App: read forward_url from session → validate domain
+4. Server: decode signed document → save as {hash}-signed.pdf
+   Server: read forward_url from session → validate domain
    ← HTTP 302 redirect to {forward_url}?file={hash}.pdf&action=result
 
-5. OS2Forms → GET /sign?action=download&file={hash}.pdf&leave=0
+5. Client → GET /sign?action=download&file={hash}.pdf&leave=0
    ← Binary PDF, file deleted after sending
 ```
 
@@ -242,27 +206,49 @@ The Docker image uses a three-stage build:
 
 Nginx sits in front as a reverse proxy on port 8080.
 
+## Test Signing Page
+
+The application includes a self-contained test page at `/test` for verifying
+the NemLog-In integration without an external system. The test page allows you
+to:
+
+1. Upload a PDF document
+2. Sign it via the NemLog-In iframe (MitID authentication)
+3. Validate the signature against the NemLog-In validation API
+4. Download the signed PDF
+
+The test page is disabled by default. Enable it by setting `itkdev.test-page-enabled: true`
+in `config/application.yaml`.
+
+**WARNING:** The test page bypasses hash validation and domain whitelisting. Do
+**not** enable it in production.
+
 ## Verification
 
 After starting the application, verify it works:
 
-1. **Test getcid:**
+1. **Built-in documentation:** Open `http://localhost:8088/` in a browser. You
+   should see the API reference page.
+
+2. **Health check:**
    ```bash
    curl http://localhost:8088/sign?action=getcid
    ```
    Expected: `{"cid":"<UUID>"}`
 
-2. **Test error handling:**
+3. **Error handling:**
    ```bash
    curl "http://localhost:8088/sign?action=sign&uri=dGVzdA==&forward_url=dGVzdA==&hash=invalid"
    ```
    Expected: `{"error":true,"message":"Incorrect hash value","code":0}`
 
+4. **Test page (if enabled):** Open `http://localhost:8088/test`, upload a PDF,
+   and complete the signing flow.
+
 ## Related Repositories
 
-- [NemLog-In Signing SDK](https://github.com/MitID-Digital-Signature/Signing-Server.git) — SignSDK v2.0.2 (build dependency)
-- [os2forms_dig_sig_server](https://github.com/MitID-Digital-Signature/os2forms_dig_sig_server/) — The Drupal proxy module this project replaces
-- [OS2Forms digital_signature](https://github.com/OS2Forms/os2forms/tree/develop/modules/os2forms_digital_signature) — The OS2Forms client module (unchanged, our API is backward-compatible)
+- [NemLog-In Signing SDK](https://github.com/itk-dev/Signing-Server.git) — SignSDK v2.0.2 (build dependency)
+- [OS2Forms digital_signature](https://github.com/OS2Forms/os2forms/tree/develop/modules/os2forms_digital_signature) — Example client integration (Drupal module)
 
 ## License
 
