@@ -1,0 +1,36 @@
+# Secrets and certificates
+config/application.yaml
+config/certificate.p12
+*.p12
+*.cer
+*.pem
+
+# Runtime data
+signed-documents/
+signers-documents/
+temp-documents/
+
+# Build output
+target/
+.sdk-built
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Git
+.git/
+.gitignore
+
+# Docker
+.docker/
+docker-compose*.yml
+
+# Documentation and CI
+README.md
+CLAUDE.md
+Taskfile.yml
+
+# OS
+.DS_Store

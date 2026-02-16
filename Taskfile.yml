@@ -4,6 +4,7 @@ vars:
   SDK_REPO: https://github.com/itk-dev/Signing-Server
   SDK_REPO_BRANCH: feature/sdk-upgrade
   SDK_DIR: Signing-Server
+  DOCKER_IMAGE: ghcr.io/itk-dev/signing-server
   MAVEN_IMAGE: maven:3-eclipse-temurin-21
   MAVEN_RUN: >-
     docker run --rm
@@ -90,6 +91,20 @@ tasks:
       - >-
         {{.MAVEN_RUN}}
         mvn clean
+
+  docker:build:
+    desc: Build Docker image
+    cmds:
+      - docker build -t {{.DOCKER_IMAGE}}:latest .
+
+  docker:push:
+    desc: "Build and push Docker image (usage: task docker:push VERSION=1.0.0)"
+    requires:
+      vars: [VERSION]
+    cmds:
+      - docker build -t {{.DOCKER_IMAGE}}:{{.VERSION}} -t {{.DOCKER_IMAGE}}:latest .
+      - docker push {{.DOCKER_IMAGE}}:{{.VERSION}}
+      - docker push {{.DOCKER_IMAGE}}:latest
 
   config:init:
     desc: Copy example config to application.yaml
