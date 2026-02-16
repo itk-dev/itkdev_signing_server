@@ -1,0 +1,21 @@
+# SDK (cloned separately)
+Signing-Server/
+
+# Secrets and config
+config/application.yaml
+config/certificate.p12
+*.p12
+*.cer
+*.pem
+
+# Build output
+target/
+.sdk-built
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store

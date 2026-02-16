@@ -13,6 +13,12 @@ vars:
     {{.MAVEN_IMAGE}}
 
 tasks:
+  default:
+    desc: List available tasks
+    silent: true
+    cmds:
+      - task --list
+
   setup:
     desc: Clone SDK, init config, and build everything
     cmds:
@@ -33,22 +39,29 @@ tasks:
       - >-
         {{.MAVEN_RUN}}
         mvn -f /build/{{.SDK_DIR}}/pom.xml clean install -DskipTests
+      - touch .sdk-built
+    status:
+      - test -f .sdk-built
+
+  build:sdk:force:
+    desc: Force rebuild SDK libraries
+    cmds:
+      - >-
+        {{.MAVEN_RUN}}
+        mvn -f /build/{{.SDK_DIR}}/pom.xml clean install -DskipTests
+      - touch .sdk-built
 
   build:
     desc: Build the os2forms signing webapp
+    deps: [build:sdk]
     cmds:
       - >-
         {{.MAVEN_RUN}}
         mvn clean package -DskipTests
 
-  build:all:
-    desc: Build SDK libraries then the webapp
-    cmds:
-      - task: build:sdk
-      - task: build
-
   dev:
     desc: Run in development mode
+    deps: [build:sdk]
     cmds:
       - >-
         docker run --rm
