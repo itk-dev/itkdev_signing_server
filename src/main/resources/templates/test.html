@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Test Signing</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: #1a1a2e;
+      background: #f8f9fa;
+      line-height: 1.6;
+    }
+    header {
+      background: #1a1a2e;
+      color: #fff;
+      padding: 2.5rem 1.5rem;
+    }
+    header h1 { margin: 0 0 0.5rem; font-size: 1.75rem; font-weight: 700; }
+    header p { margin: 0; color: #a0aec0; font-size: 1rem; max-width: 640px; }
+    .container { max-width: 640px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+    .card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .warning {
+      background: #fffbeb;
+      border-left: 4px solid #d97706;
+      padding: 0.75rem 1rem;
+      border-radius: 0 6px 6px 0;
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+    }
+    .warning strong { color: #92400e; }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    input[type="file"] {
+      display: block;
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px dashed #cbd5e0;
+      border-radius: 6px;
+      background: #f7fafc;
+      margin-bottom: 1rem;
+      cursor: pointer;
+    }
+    input[type="file"]:hover { border-color: #a0aec0; }
+
+    button {
+      background: #1a1a2e;
+      color: #fff;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:hover { background: #2d2d4e; }
+
+    footer {
+      text-align: center;
+      padding: 2rem 1.5rem;
+      color: #a0aec0;
+      font-size: 0.85rem;
+    }
+    footer a { color: #4a5568; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div style="max-width:960px;margin:0 auto;">
+    <h1>Test Signing</h1>
+    <p>Upload a PDF document to test the NemLog-In signing integration.</p>
+  </div>
+</header>
+
+<div class="container">
+  <div class="warning">
+    <strong>Test mode:</strong> This page bypasses the normal API security validation (hash check, domain whitelist). It is intended for verifying the NemLog-In integration, not for production use.
+  </div>
+
+  <div class="card">
+    <form action="/test/upload" method="post" enctype="multipart/form-data">
+      <label for="file">Select a PDF to sign</label>
+      <input type="file" id="file" name="file" accept="application/pdf" required/>
+      <button type="submit">Upload &amp; Sign</button>
+    </form>
+  </div>
+</div>
+
+<footer>
+  <a href="/">Back to API Reference</a>
+</footer>
+
+</body>
+</html>

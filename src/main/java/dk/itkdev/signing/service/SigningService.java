@@ -103,6 +103,31 @@ public class SigningService {
     }
 
     /**
+     * Save an uploaded PDF document to the source documents directory.
+     *
+     * @param pdfData the raw PDF bytes
+     * @return the unique local filename (e.g. "91d56055f7274fdeb327077d1e32e5d1.pdf")
+     */
+    public String saveUploadedDocument(byte[] pdfData) throws IOException {
+        if (pdfData == null || pdfData.length == 0) {
+            throw new IllegalArgumentException("PDF data must not be empty.");
+        }
+
+        String unique = "upload" + System.nanoTime() + UUID.randomUUID().toString();
+        String hash = md5(unique);
+        String localFilename = hash + ".pdf";
+
+        Path sourceDir = Paths.get(properties.getSourceDocumentsDir());
+        Files.createDirectories(sourceDir);
+        Path targetPath = sourceDir.resolve(localFilename);
+
+        Files.write(targetPath, pdfData);
+        debug("Saved uploaded document: {}", targetPath);
+
+        return localFilename;
+    }
+
+    /**
      * Generate a signing payload for a locally stored PDF.
      */
     public SigningPayloadDTO generateSigningPayload(String filename) throws Exception {

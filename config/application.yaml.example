@@ -51,3 +51,6 @@ itkdev:
   source-documents-dir: /app/signers-documents/
   # Enable debug logging
   debug: false
+  # Enable the /test page for manual signing verification.
+  # Do NOT enable in production.
+  test-page-enabled: false

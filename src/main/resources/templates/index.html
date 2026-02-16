@@ -286,6 +286,10 @@ Location: https://forms.example.com/callback?file=abc123...def.pdf&amp;action=re
     <li><strong>Session-based state</strong> &mdash; Forward URLs are stored in the HTTP session, not in client-visible cookies or parameters.</li>
   </ul>
 
+  <div th:if="${testPageEnabled}" class="note" style="margin-top: 2rem;">
+    <strong>Test mode enabled:</strong> You can <a href="/test">upload and sign a PDF</a> directly to verify the NemLog-In integration.
+  </div>
+
 </div>
 
 <footer>

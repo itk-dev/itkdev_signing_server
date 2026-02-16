@@ -28,3 +28,4 @@ itkdev:
   signed-documents-dir: ./signed-documents/
   source-documents-dir: ./signers-documents/
   debug: false
+  test-page-enabled: false

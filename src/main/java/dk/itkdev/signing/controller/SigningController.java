@@ -1,6 +1,7 @@
 package dk.itkdev.signing.controller;
 
 import dk.gov.nemlogin.signing.dto.SigningPayloadDTO;
+import dk.itkdev.signing.config.ItkdevProperties;
 import dk.itkdev.signing.service.SigningService;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
@@ -29,13 +30,16 @@ public class SigningController {
     private static final String SESSION_FILENAME = "filename";
 
     private final SigningService signingService;
+    private final ItkdevProperties properties;
 
-    public SigningController(SigningService signingService) {
+    public SigningController(SigningService signingService, ItkdevProperties properties) {
         this.signingService = signingService;
+        this.properties = properties;
     }
 
     @GetMapping("/")
-    public String index() {
+    public String index(Model model) {
+        model.addAttribute("testPageEnabled", properties.isTestPageEnabled());
         return "index";
     }
 

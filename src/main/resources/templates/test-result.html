@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Test Signing — Result</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: #1a1a2e;
+      background: #f8f9fa;
+      line-height: 1.6;
+    }
+    header {
+      background: #1a1a2e;
+      color: #fff;
+      padding: 2.5rem 1.5rem;
+    }
+    header h1 { margin: 0 0 0.5rem; font-size: 1.75rem; font-weight: 700; }
+    header p { margin: 0; color: #a0aec0; font-size: 1rem; max-width: 640px; }
+    .container { max-width: 640px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+    .card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .success { border-left: 4px solid #38a169; }
+    .cancelled { border-left: 4px solid #d97706; }
+    .error { border-left: 4px solid #e53e3e; }
+
+    .card h2 { margin: 0 0 0.75rem; font-size: 1.25rem; }
+
+    .btn {
+      display: inline-block;
+      padding: 0.75rem 1.5rem;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-primary { background: #1a1a2e; color: #fff; }
+    .btn-primary:hover { background: #2d2d4e; }
+    .btn-secondary { background: #e2e8f0; color: #1a1a2e; margin-left: 0.5rem; }
+    .btn-secondary:hover { background: #cbd5e0; }
+
+    footer {
+      text-align: center;
+      padding: 2rem 1.5rem;
+      color: #a0aec0;
+      font-size: 0.85rem;
+    }
+    footer a { color: #4a5568; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div style="max-width:960px;margin:0 auto;">
+    <h1>Test Signing — Result</h1>
+    <p>The signing operation has completed.</p>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- Success -->
+  <div th:if="${action == 'result'}" class="card success">
+    <h2>Document Signed Successfully</h2>
+    <p>Your PDF has been signed via NemLog-In. Click below to download the signed document.</p>
+    <a th:href="@{/sign(action='download', file=${file}, leave='1')}" class="btn btn-primary">Download Signed PDF</a>
+    <a href="/test" class="btn btn-secondary">Sign Another</a>
+  </div>
+
+  <!-- Cancelled -->
+  <div th:if="${action == 'cancel'}" class="card cancelled">
+    <h2>Signing Cancelled</h2>
+    <p>The signing operation was cancelled. No changes were made to the document.</p>
+    <a href="/test" class="btn btn-primary">Try Again</a>
+  </div>
+
+  <!-- Error -->
+  <div th:if="${action == 'error'}" class="card error">
+    <h2>Signing Error</h2>
+    <p>An error occurred during the signing process. Please check the server logs for details.</p>
+    <a href="/test" class="btn btn-primary">Try Again</a>
+  </div>
+
+</div>
+
+<footer>
+  <a href="/">Back to API Reference</a>
+</footer>
+
+</body>
+</html>

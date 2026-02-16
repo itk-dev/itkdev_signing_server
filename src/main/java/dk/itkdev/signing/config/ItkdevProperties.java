@@ -15,6 +15,7 @@ public class ItkdevProperties {
     private String signedDocumentsDir = "./signed-documents/";
     private String sourceDocumentsDir = "./signers-documents/";
     private boolean debug = false;
+    private boolean testPageEnabled = false;
 
     public String getHashSalt() {
         return hashSalt;
@@ -54,5 +55,13 @@ public class ItkdevProperties {
 
     public void setDebug(boolean debug) {
         this.debug = debug;
+    }
+
+    public boolean isTestPageEnabled() {
+        return testPageEnabled;
+    }
+
+    public void setTestPageEnabled(boolean testPageEnabled) {
+        this.testPageEnabled = testPageEnabled;
     }
 }
