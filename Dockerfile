@@ -17,15 +17,18 @@ RUN --mount=type=cache,target=/root/.m2 \
 FROM eclipse-temurin:21-jre-jammy AS final
 WORKDIR /app
 
-ARG UID=1042
+RUN apt-get update && apt-get install -y --no-install-recommends gosu && \
+    rm -rf /var/lib/apt/lists/*
+
 RUN adduser --disabled-password --gecos "" --home "/nonexistent" \
-    --shell "/sbin/nologin" --no-create-home --uid "${UID}" appuser
+    --shell "/sbin/nologin" --no-create-home --uid 1042 appuser
 RUN mkdir -p signed-documents signers-documents temp-documents config && \
     chown -R appuser:appuser /app
 
 COPY --from=build --chown=appuser:appuser /build/target/itkdev-signing-webapp-*.jar app.jar
+COPY --chmod=755 docker-entrypoint.sh /usr/local/bin/
 
-USER appuser
 EXPOSE 8088
 
-ENTRYPOINT ["java", "-jar", "app.jar", "--spring.config.location=file:/app/config/application.yaml"]
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["java", "-jar", "app.jar", "--spring.config.location=file:/app/config/application.yaml"]

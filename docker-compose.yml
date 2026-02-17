@@ -30,16 +30,14 @@ services:
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
 
   signing-server:
-    build:
-      context: .
-      args:
-        # Set UID to match your host user (default: current user)
-        UID: ${UID:-1000}
+    build: .
     ports:
       - "8088"
     networks:
       - app
     environment:
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
       # Override Spring/Tomcat upload size settings from .env
       SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE: ${MAX_UPLOAD_SIZE:-56M}B
       SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE: ${MAX_UPLOAD_SIZE:-56M}B

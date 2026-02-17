@@ -11,6 +11,9 @@ See [keep a changelog](https://keepachangelog.com/en/1.1.0/) for information abo
 
 ## [Unreleased]
 
+### Added
+- Runtime UID/GID configuration via `PUID`/`PGID` environment variables (no
+  rebuild needed)
 
 ## [0.0.1] - 2026-01-17
 

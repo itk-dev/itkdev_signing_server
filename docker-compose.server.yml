@@ -31,6 +31,9 @@ services:
     build: .
     networks:
       - app
+    environment:
+      PUID: ${PUID:-1042}
+      PGID: ${PGID:-1042}
     volumes:
       - ./config/application.yaml:/app/config/application.yaml:ro
       - ./config/certificate.p12:/app/config/certificate.p12:ro

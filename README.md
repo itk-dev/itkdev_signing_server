@@ -191,6 +191,7 @@ Pull and run the image directly without building from source:
 ```bash
 docker pull ghcr.io/itk-dev/signing-server:latest
 docker run --rm -p 8088:8088 \
+  -e PUID=$(id -u) -e PGID=$(id -g) \
   -v ./config/application.yaml:/app/config/application.yaml:ro \
   -v ./config/certificate.p12:/app/config/certificate.p12:ro \
   -v ./signed-documents:/app/signed-documents \
@@ -222,7 +223,7 @@ image. Run `task clone` first if it hasn't been cloned yet.
 The Dockerfile uses a two-stage build:
 
 1. **build** — Builds the SDK libraries and the webapp (`maven:3-eclipse-temurin-21`)
-2. **final** — Runtime with minimal JRE image (`eclipse-temurin:21-jre-jammy`), runs as non-root user (`appuser`) on port 8088
+2. **final** — Runtime with minimal JRE image (`eclipse-temurin:21-jre-jammy`), runs on port 8088. The container starts as root and uses an entrypoint script with `gosu` to drop privileges to `appuser` after adjusting UID/GID at runtime (see `PUID`/`PGID` below)
 
 ### Docker Compose
 
@@ -256,6 +257,8 @@ The service is accessible through the nginx reverse proxy on port **8080**.
 |----------|-------------|---------|
 | `COMPOSE_PROJECT_NAME` | Docker Compose project name | `sign-server` |
 | `COMPOSE_DOMAIN` | Domain for Traefik routing (local dev) | `sign.local.itkdev.dk` |
+| `PUID` | UID for the container process (`appuser`) | `1000` (dev) / `1042` (prod) |
+| `PGID` | GID for the container process (`appuser`) | same as `PUID` |
 | `MAX_UPLOAD_SIZE` | Max upload size for nginx and Spring | `56M` |
 | `MAX_UPLOAD_SIZE_BYTES` | Max upload size in bytes for Tomcat | `58720256` |
 
