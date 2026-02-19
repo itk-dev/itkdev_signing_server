@@ -1,8 +1,7 @@
 version: '3'
 
 vars:
-  SDK_REPO: https://github.com/itk-dev/Signing-Server
-  SDK_REPO_BRANCH: feature/sdk-upgrade
+  SDK_URL: https://cms.nemlog-in.dk/media/3qdj0erk/nemlogin-signsdk-java-2-0-2.zip
   SDK_DIR: Signing-Server
   DOCKER_IMAGE: ghcr.io/itk-dev/signing-server
   MAVEN_IMAGE: maven:3-eclipse-temurin-21
@@ -21,16 +20,20 @@ tasks:
       - task --list
 
   setup:
-    desc: Clone SDK, init config, and build everything
+    desc: Download SDK, init config, and build everything
     cmds:
-      - task: clone
+      - task: sdk:download
       - task: config:init
       - task: build:all
 
-  clone:
-    desc: Clone the Signing-Server SDK repo
+  sdk:download:
+    desc: Download and extract the NemLog-In Signing SDK
     cmds:
-      - git clone -b {{.SDK_REPO_BRANCH}} {{.SDK_REPO}} {{.SDK_DIR}}
+      - mkdir -p /tmp/sdk-download
+      - curl -fSL -o /tmp/sdk-download/sdk.zip "{{.SDK_URL}}"
+      - unzip -q /tmp/sdk-download/sdk.zip -d /tmp/sdk-download/extracted
+      - mv /tmp/sdk-download/extracted/* {{.SDK_DIR}}
+      - rm -rf /tmp/sdk-download
     status:
       - test -d {{.SDK_DIR}}
 

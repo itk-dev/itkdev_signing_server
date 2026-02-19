@@ -17,7 +17,7 @@ server. For an example, see the
 
 - Docker and Docker Compose
 - [Task](https://taskfile.dev/) (task runner)
-- Git (to clone the NemLog-In SDK)
+- curl and unzip (to download the NemLog-In SDK)
 - An OCES3 certificate (`.p12`) registered with NemLog-In
 
 **NOTE:** Java and Maven are not required locally. All build and run commands
@@ -36,7 +36,7 @@ cd itkdev-signing-server
 
 ### 2. First-Time Setup
 
-Run the setup task to clone the SDK, initialize configuration, and build
+Run the setup task to download the SDK, initialize configuration, and build
 everything:
 
 ```bash
@@ -45,7 +45,7 @@ task setup
 
 This performs three steps:
 
-1. Clones the [NemLog-In Signing SDK](https://github.com/itk-dev/Signing-Server.git) into `Signing-Server/`
+1. Downloads and extracts the [NemLog-In Signing SDK](https://cms.nemlog-in.dk/media/3qdj0erk/nemlogin-signsdk-java-2-0-2.zip) into `Signing-Server/`
 2. Copies `config/application.yaml.example` to `config/application.yaml`
 3. Builds the SDK libraries and the webapp
 
@@ -111,8 +111,8 @@ Run `task --list` to see all available tasks:
 
 | Task | Description |
 |------|-------------|
-| `task setup` | Clone SDK, init config, and build everything |
-| `task clone` | Clone the Signing-Server SDK repo |
+| `task setup` | Download SDK, init config, and build everything |
+| `task sdk:download` | Download and extract the NemLog-In Signing SDK |
 | `task build:sdk` | Build SDK libraries (install to local Maven repo) |
 | `task build:sdk:force` | Force rebuild SDK libraries (ignores cache) |
 | `task build` | Build the webapp |
@@ -217,7 +217,7 @@ docker build -t ghcr.io/itk-dev/signing-server:latest .
 ```
 
 **NOTE:** The SDK source (`Signing-Server/`) must be present before building the
-image. Run `task clone` first if it hasn't been cloned yet.
+image. Run `task sdk:download` first if it hasn't been downloaded yet.
 
 #### Image Architecture
 
@@ -319,7 +319,7 @@ After starting the application, verify it works:
 
 ## Related Repositories
 
-- [NemLog-In Signing SDK](https://github.com/itk-dev/Signing-Server.git) — SignSDK v2.0.2 (build dependency)
+- [NemLog-In Signing SDK](https://cms.nemlog-in.dk/media/3qdj0erk/nemlogin-signsdk-java-2-0-2.zip) — SignSDK v2.0.2 (build dependency)
 - [OS2Forms digital_signature](https://github.com/OS2Forms/os2forms/tree/develop/modules/os2forms_digital_signature) — Example client integration (Drupal module)
 
 ## License

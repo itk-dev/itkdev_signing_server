@@ -16,11 +16,11 @@ The landing page (`/`) serves built-in API documentation with endpoint details, 
 
 All commands use [Task](https://taskfile.dev/). Java/Maven run inside Docker containers (`maven:3-eclipse-temurin-21`) — no local Java installation needed. Maven dependencies are cached in a named Docker volume (`itkdev-signing-m2`).
 
-The SDK (`Signing-Server/`) must be cloned and built first.
+The SDK (`Signing-Server/`) must be downloaded and built first.
 
 ```bash
-task setup          # Clone SDK + init config + build everything (first-time)
-task clone          # Clone Signing-Server SDK repo only
+task setup          # Download SDK + init config + build everything (first-time)
+task sdk:download   # Download and extract the NemLog-In Signing SDK
 task build:sdk      # Build SDK libraries (mvn clean install in Signing-Server/)
 task build          # Build our webapp (mvn clean package)
 task build:all      # Build SDK + webapp
@@ -41,7 +41,7 @@ Verify with: `curl http://localhost:8088/sign?action=getcid` → `{"cid":"uuid"}
 
 ### SDK Dependency Model
 
-The app depends on the [NemLog-In Signing SDK](https://github.com/itk-dev/Signing-Server.git) v2.0.2 as library JARs installed to the local Maven repo. The SDK directory is gitignored. Key SDK libraries:
+The app depends on the [NemLog-In Signing SDK](https://cms.nemlog-in.dk/media/3qdj0erk/nemlogin-signsdk-java-2-0-2.zip) v2.0.2 as library JARs installed to the local Maven repo. The SDK directory is gitignored. Key SDK libraries:
 
 - `nemlogin-signing-spring-boot` — auto-configures `SigningPayloadService`, `SignatureKeys`, `signingClientUrl`, `entityID`, `validationServiceUrl`
 - `nemlogin-signing-pades` — PAdES PDF signing format

@@ -11,6 +11,8 @@ See [keep a changelog](https://keepachangelog.com/en/1.1.0/) for information abo
 
 ## [Unreleased]
 
+- Replaced SDK git clone with official zip download from cms.nemlog-in.dk for easier upgrades.
+
 ## [0.0.3] - 2026-01-19
 
 - Ensure documents are only downloadable once and deleted after being downloaded.
