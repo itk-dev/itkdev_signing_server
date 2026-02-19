@@ -28,7 +28,7 @@ services:
       - "traefik.http.services.${COMPOSE_PROJECT_NAME}-nginx.loadbalancer.server.port=8080"
 
   signing-server:
-    image: ghcr.io/itk-dev/signing-server
+    image: ghcr.io/itk-dev/signing-server:{$TAG:-latest}
     networks:
       - app
     environment:
