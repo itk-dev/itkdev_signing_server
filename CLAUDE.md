@@ -86,7 +86,7 @@ Single endpoint, action-based routing:
 | `sign` | `GET /sign?action=sign&uri={b64}&forward_url={b64}&hash={sha1}` | Signing page with NemLog-In iframe |
 | `result` | `GET /sign?action=result&file={name}` | 302 redirect to forward_url |
 | `cancel` | `GET /sign?action=cancel&file={name}` | 302 redirect to forward_url |
-| `download` | `GET /sign?action=download&file={name}&leave={0\|1}` | Binary PDF stream |
+| `download` | `GET /sign?action=download&file={name}` | Binary PDF stream (one-time; file deleted after download) |
 
 Error responses: `{"error": true, "message": "...", "code": 0}`
 

@@ -11,14 +11,20 @@ See [keep a changelog](https://keepachangelog.com/en/1.1.0/) for information abo
 
 ## [Unreleased]
 
+## [0.0.3] - 2026-01-19
+
+- Ensure documents are only downloadable once and deleted after being downloaded.
+
 ## [0.0.2] - 2026-01-17
 
-- Runtime UID/GID configuration via `PUID`/`PGID` environment variables (no rebuild needed)
+- Runtime UID/GID configuration via `PUID`/`PGID` environment variables (no rebuild needed).
 
 ## [0.0.1] - 2026-01-16
 
-- Firste release with basic functionality1
+- First release with basic functionality
 
 
-[unreleased]: https://github.com/itk-dev/itkdev_signing_server.git/compare/v0.0.1...HEAD
-[0.0.1]: https://github.com/itk-dev/itkdev_signing_server.git/releases/tag/v0.0.1
+[unreleased]: https://github.com/itk-dev/itkdev_signing_server.git/compare/v0.0.3...HEAD
+[0.0.3]: https://github.com/itk-dev/itkdev_signing_server/releases/tag/0.0.3
+[0.0.2]: https://github.com/itk-dev/itkdev_signing_server/releases/tag/0.0.2
+[0.0.1]: https://github.com/itk-dev/itkdev_signing_server/releases/tag/0.0.1

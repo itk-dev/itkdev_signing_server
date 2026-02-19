@@ -234,19 +234,19 @@ Location: https://forms.example.com/callback?file=abc123...def.pdf&amp;action=re
       <span class="endpoint-path">/sign?action=download</span>
     </div>
     <div class="endpoint-body">
-      <p>Download the signed PDF. By default the file is deleted from the server after download.</p>
+      <p>Download the signed PDF. This is a one-time retrieval &mdash; the file is permanently deleted from the server after download.</p>
       <h3>Parameters</h3>
       <table>
         <thead><tr><th>Name</th><th>Type</th><th>Description</th></tr></thead>
         <tbody>
           <tr><td><code>file</code></td><td>string</td><td>Signed document filename (must match <code>^[a-z0-9]{32}\.pdf$</code>).</td></tr>
-          <tr><td><code>leave</code></td><td>string</td><td><code>0</code> = delete after download (default), <code>1</code> = keep file on server.</td></tr>
         </tbody>
       </table>
       <h3>Example</h3>
-      <pre><code>curl -O "https://sign.example.com/sign?action=download&amp;file=abc123...def.pdf&amp;leave=0"</code></pre>
+      <pre><code>curl -O "https://sign.example.com/sign?action=download&amp;file=abc123...def.pdf"</code></pre>
       <h3>Response</h3>
       <p>Binary PDF stream with <code>Content-Type: application/pdf</code>.</p>
+      <div class="note">The file is deleted after download. A second request for the same file will return an error.</div>
     </div>
   </div>
 

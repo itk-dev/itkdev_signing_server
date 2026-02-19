@@ -4,9 +4,6 @@ import dk.gov.nemlogin.signing.dto.SigningPayloadDTO;
 import dk.itkdev.signing.config.ItkdevProperties;
 import dk.itkdev.signing.service.SigningService;
 import jakarta.servlet.http.HttpSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -14,8 +11,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
-import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Base64;
@@ -23,8 +18,6 @@ import java.util.Map;
 
 @Controller
 public class SigningController {
-
-    private static final Logger LOG = LoggerFactory.getLogger(SigningController.class);
 
     private static final String SESSION_FORWARD_URL = "forward_url";
     private static final String SESSION_FILENAME = "filename";
@@ -50,7 +43,6 @@ public class SigningController {
             @RequestParam(name = "forward_url", required = false) String forwardUrl,
             @RequestParam(required = false) String hash,
             @RequestParam(required = false) String file,
-            @RequestParam(required = false) String leave,
             HttpSession session,
             Model model) {
 
@@ -60,7 +52,7 @@ public class SigningController {
                 case "sign" -> handleSign(uri, forwardUrl, hash, session, model);
                 case "result" -> handleResult(file, "result", session);
                 case "cancel" -> handleResult(file, "cancel", session);
-                case "download" -> handleDownload(file, leave);
+                case "download" -> handleDownload(file);
                 default -> errorResponse("Unexpected action: " + action);
             };
         } catch (Exception e) {
@@ -144,12 +136,9 @@ public class SigningController {
                 .build();
     }
 
-    private ResponseEntity<?> handleDownload(String file, String leave) throws Exception {
+    private ResponseEntity<byte[]> handleDownload(String file) throws Exception {
         if (file == null || file.isEmpty()) {
             throw new IllegalArgumentException("Parameter file is required.");
-        }
-        if (leave == null) {
-            throw new IllegalArgumentException("Parameter leave is required.");
         }
 
         Path signedPath = signingService.getSignedDocumentPath(file);
@@ -159,35 +148,16 @@ public class SigningController {
             throw new SecurityException("Attempt to download empty or nonexisting file");
         }
 
-        long filesize = Files.size(signedPath);
-        signingService.debug("Sending {} ({} bytes)", signedPath, filesize);
+        signingService.debug("Sending {} ({} bytes)", signedPath, Files.size(signedPath));
 
-        InputStreamResource resource = new InputStreamResource(new FileInputStream(signedPath.toFile()));
+        byte[] pdfData = Files.readAllBytes(signedPath);
+        signingService.cleanupDocuments(file);
 
-        ResponseEntity<InputStreamResource> response = ResponseEntity.ok()
+        return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_PDF)
-                .contentLength(filesize)
+                .contentLength(pdfData.length)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file + "\"")
-                .body(resource);
-
-        // Unless told otherwise, remove the file after sending
-        boolean deleteAfterSend = !"1".equals(leave);
-        if (deleteAfterSend) {
-            // Schedule deletion after response is sent
-            // Since we can't use deleteFileAfterSend like in Symfony,
-            // we delete after reading the stream
-            new Thread(() -> {
-                try {
-                    Thread.sleep(5000); // Wait for response to be sent
-                    Files.deleteIfExists(signedPath);
-                    signingService.debug("Deleted signed file after download: {}", signedPath);
-                } catch (Exception e) {
-                    LOG.warn("Failed to delete signed file: {}", signedPath, e);
-                }
-            }).start();
-        }
-
-        return response;
+                .body(pdfData);
     }
 
     private ResponseEntity<?> errorResponse(String message) {

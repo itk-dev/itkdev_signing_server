@@ -261,6 +261,33 @@ public class SigningService {
         return signatureValidationService.validate(ctx);
     }
 
+    /**
+     * Delete both the signed document and the source document for a given filename.
+     * Logs warnings on failure but does not throw, since the download has already succeeded.
+     *
+     * @param file the original filename (e.g. "91d56055f7274fdeb327077d1e32e5d1.pdf")
+     */
+    public void cleanupDocuments(String file) {
+        String hash = file.replace(".pdf", "");
+
+        Path signedPath = Paths.get(properties.getSignedDocumentsDir()).resolve(hash + "-signed.pdf");
+        Path sourcePath = Paths.get(properties.getSourceDocumentsDir()).resolve(file);
+
+        try {
+            Files.deleteIfExists(signedPath);
+            debug("Deleted signed document: {}", signedPath);
+        } catch (IOException e) {
+            LOG.warn("Failed to delete signed document: {}", signedPath, e);
+        }
+
+        try {
+            Files.deleteIfExists(sourcePath);
+            debug("Deleted source document: {}", sourcePath);
+        } catch (IOException e) {
+            LOG.warn("Failed to delete source document: {}", sourcePath, e);
+        }
+    }
+
     public void debug(String message, Object... args) {
         if (properties.isDebug()) {
             LOG.info(message, args);

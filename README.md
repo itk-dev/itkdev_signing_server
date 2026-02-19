@@ -139,7 +139,7 @@ query parameter:
 | `sign` | Initiate signing (requires `uri`, `forward_url`, `hash`) |
 | `result` | Redirect to `forward_url` after successful signing |
 | `cancel` | Redirect to `forward_url` after cancellation |
-| `download` | Download the signed PDF |
+| `download` | Download the signed PDF (one-time; file deleted after download) |
 
 The signing result callback from the NemLog-In iframe is handled at
 `POST /signing-result`.
@@ -172,6 +172,7 @@ sequenceDiagram
 
     Client->>Server: GET /sign?action=download&file={name}
     Server-->>Client: Binary PDF stream
+    Note right of Server: File deleted after download<br/>(one-time retrieval)
 ```
 
 ## Deployment

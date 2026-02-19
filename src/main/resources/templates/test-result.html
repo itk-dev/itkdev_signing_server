@@ -166,13 +166,14 @@
     <h2>Document Signed Successfully</h2>
     <p>Your PDF has been signed via NemLog-In.</p>
     <div class="actions">
-      <a th:href="@{/sign(action='download', file=${file}, leave='1')}" class="btn btn-primary">Download Signed PDF</a>
       <form th:if="${validationReport == null}" action="/test/validate" method="post" style="display:inline">
         <input type="hidden" name="file" th:value="${file}"/>
         <button type="submit" class="btn btn-validate">Validate Signature</button>
       </form>
+      <a th:href="@{/sign(action='download', file=${file})}" class="btn btn-primary">Download Signed PDF</a>
       <a href="/test" class="btn btn-secondary">Sign Another</a>
     </div>
+    <p style="margin-top:0.75rem;font-size:0.85rem;color:#4a5568;">Note: the signed file is deleted from the server after download. Validate before downloading.</p>
   </div>
 
   <!-- Cancelled -->
