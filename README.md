@@ -317,6 +317,31 @@ After starting the application, verify it works:
 4. **Test page (if enabled):** Open `http://localhost:8088/test`, upload a PDF,
    and complete the signing flow.
 
+## Nemlogin configuration
+
+You also need to configure the nemlogin side of things. This is done in the administration panel: https://administration.nemlog-in.dk/
+
+### Requirements
+
+- Certificate (OCES3 Systemcertifikat)
+- metadata file
+
+### Configuration
+
+In the administration panel you select the system you want to manage. You need to add an entityID (same form as an URL). Metadata example file can be found here: [https://cms.nemlog-in.dk/media/tcujxmgw/sp-metadata-sample.xml](https://cms.nemlog-in.dk/media/tcujxmgw/sp-metadata-sample.xml). Then you need to:
+
+- change EntityID (to the one you have used in the administration)
+- change URLs to match your system
+- have the metadata match the system certificate you are using.
+
+Find more information here: [https://www.nemlog-in.dk/integrer-og-administrer-it-systemet/login/dokumentation-og-vejledninger/tekniske-oplysninger-til-brug-for-integrationstest/](https://www.nemlog-in.dk/integrer-og-administrer-it-systemet/login/dokumentation-og-vejledninger/tekniske-oplysninger-til-brug-for-integrationstest/)
+
+Upload the metadata and the certificate in the administration panel.
+
+When this is done you are ready to start testing. To do this press "Provisioner til integrationstest", this will deploy to the integration test environment.
+
+Test away.
+
 ## Related Repositories
 
 - [NemLog-In Signing SDK](https://cms.nemlog-in.dk/media/3qdj0erk/nemlogin-signsdk-java-2-0-2.zip) — SignSDK v2.0.2 (build dependency)
