@@ -8,6 +8,7 @@ networks:
 services:
   nginx:
     image: nginxinc/nginx-unprivileged:alpine
+    restart: unless-stopped
     depends_on:
       - signing-server
     networks:
@@ -29,6 +30,7 @@ services:
 
   signing-server:
     image: ghcr.io/itk-dev/signing-server:${TAG:-latest}
+    restart: unless-stopped
     networks:
       - app
     environment:
