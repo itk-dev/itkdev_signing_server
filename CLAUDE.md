@@ -19,21 +19,29 @@ All commands use [Task](https://taskfile.dev/). Java/Maven run inside Docker con
 The SDK (`Signing-Server/`) must be downloaded and built first.
 
 ```bash
-task setup          # Download SDK + init config + build everything (first-time)
-task sdk:download   # Download and extract the NemLog-In Signing SDK
-task build:sdk      # Build SDK libraries (mvn clean install in Signing-Server/)
-task build          # Build our webapp (mvn clean package)
-task build:all      # Build SDK + webapp
-task dev            # Run in dev mode (port 8088 exposed)
-task run:jar        # Run the built jar directly
-task clean          # Maven clean
-task config:init    # Copy application.yaml.example → application.yaml
+task setup            # Download SDK + init config + build everything (first-time)
+task sdk:download     # Download and extract the NemLog-In Signing SDK
+task build:sdk        # Build SDK libraries (mvn clean install in Signing-Server/)
+task build:sdk:force  # Rebuild SDK even if already built (ignores the .sdk-built marker)
+task build            # Build our webapp (mvn clean package); depends on build:sdk
+task build:all        # Force-rebuild SDK + webapp
+task dev              # Run in dev mode (mvn spring-boot:run, port 8088 exposed)
+task run:jar          # Run the built jar directly
+task clean            # Maven clean
+task config:init      # Copy application.yaml.example → application.yaml
+task docker:build     # Build the Docker image (--no-cache)
+task docker:push VERSION=x.y.z  # Build, tag, and push image to GHCR
 ```
 
-For production deployment:
+**`.sdk-built` marker**: `build:sdk` is a no-op once the `.sdk-built` file exists (a Taskfile `status:` guard). After changing anything under `Signing-Server/`, run `task build:sdk:force` (or delete `.sdk-built`) — a plain `task build` will *not* pick up SDK changes.
+
+**Tests**: there is no test suite. Every Maven invocation passes `-DskipTests`, and there is no `src/test/`. Do not assume `task test` exists.
+
+For production deployment, use the server compose file (pulls the pre-built GHCR image, Traefik + HTTPS):
 ```bash
-docker compose build && docker compose up -d
+docker compose -f docker-compose.server.yml up -d
 ```
+`docker compose up -d` (the default `docker-compose.yml`) is the local-dev variant that builds from source.
 
 Verify with: `curl http://localhost:8088/sign?action=getcid` → `{"cid":"uuid"}`
 
@@ -46,6 +54,7 @@ The app depends on the [NemLog-In Signing SDK](https://cms.nemlog-in.dk/media/3q
 - `nemlogin-signing-spring-boot` — auto-configures `SigningPayloadService`, `SignatureKeys`, `signingClientUrl`, `entityID`, `validationServiceUrl`
 - `nemlogin-signing-pades` — PAdES PDF signing format
 - `nemlogin-signing-jws` — JWS signing (required)
+- `nemlogin-signing-pdf-generator` / `nemlogin-signing-pdf-validator` — PDF generation & pre-sign validation
 - `nemlogin-signing-validation` — signature validation via NemLog-In API
 
 We do **not** modify SDK code. Our app only implements: the proxy API, document fetching, file management, signing page template, and test tooling.
@@ -126,14 +135,24 @@ When working with signing internals, refer to these upstream files in `Signing-S
 
 ## Docker
 
-Two-stage Dockerfile: builds SDK, then builds webapp, then runtime with `eclipse-temurin:21-jre-jammy`. Runs as non-root `appuser` on port 8088. Config mounted at `/app/config/application.yaml`.
+Two-stage Dockerfile: stage 1 builds the SDK then the webapp (`maven:3-eclipse-temurin-21`); stage 2 is the runtime (`eclipse-temurin:21-jre-jammy`) on port 8088. Config is mounted at `/app/config/application.yaml`.
 
-Compose includes nginx reverse proxy (port 8080) in front of the signing server.
+**Runtime user**: the container *starts as root* and runs `docker-entrypoint.sh`, which remaps the `appuser` UID/GID to the `PUID`/`PGID` env vars (default `1042`), `chown`s the document directories, then drops to `appuser` via `gosu` before launching the JVM. This is how host-volume permissions are kept correct — it is not a plain non-root container.
+
+**Document directories** (all mounted as volumes): `signed-documents/`, `signers-documents/` (fetched/uploaded source PDFs), and `temp-documents/`.
+
+**Two compose files:**
+- `docker-compose.yml` — local dev. Builds the image from source; nginx is configured via `.docker/templates`.
+- `docker-compose.server.yml` — production. Pulls `ghcr.io/itk-dev/signing-server:${TAG}`, adds Traefik labels with Let's Encrypt TLS.
+
+Both put an nginx reverse proxy (port 8080) in front of the signing server. Upload-size limits are tunable via the `MAX_UPLOAD_SIZE` / `MAX_UPLOAD_SIZE_BYTES` env vars (see `.env`), which override the Spring/Tomcat defaults.
 
 ## Tech Stack
 
-- Java 17+ / Spring Boot 3.2.1
+- Java 17 language level (`<java.version>17</java.version>`), built and run on a Java 21 JDK/JRE in Docker
+- Spring Boot 3.2.1
 - Thymeleaf templates
 - Maven build (inside Docker — no local Java required)
 - NemLog-In SignSDK v2.0.2
+- BouncyCastle security provider (registered in `Application.java`)
 - Docker with nginx reverse proxy
