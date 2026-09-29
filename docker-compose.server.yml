@@ -23,10 +23,13 @@ services:
       NGINX_MAX_BODY_SIZE: ${MAX_UPLOAD_SIZE:-56M}
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-nginx.rule=Host(`${COMPOSE_SERVER_DOMAIN}`)"
-      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-nginx.entrypoints=websecure"
-      - "traefik.http.routers.${COMPOSE_PROJECT_NAME}-nginx.tls.certresolver=letsencrypt"
-      - "traefik.http.services.${COMPOSE_PROJECT_NAME}-nginx.loadbalancer.server.port=8080"
+      - "traefik.docker.network=frontend"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME:?}-http.rule=Host(`${COMPOSE_SERVER_DOMAIN:?}`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME:?}-http.entrypoints=web"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME:?}-http.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME:?}.rule=Host(`${COMPOSE_SERVER_DOMAIN:?}`)"
+      - "traefik.http.routers.${COMPOSE_PROJECT_NAME:?}.entrypoints=websecure"
 
   signing-server:
     image: ghcr.io/itk-dev/signing-server:${TAG:-latest}
