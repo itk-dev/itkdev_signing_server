@@ -11,6 +11,8 @@ See [keep a changelog](https://keepachangelog.com/en/1.1.0/) for information abo
 
 ## [Unreleased]
 
+- Added standard labels to nginx to match itkdev setup and redirect http -> https.
+
 ## [0.0.4] - 2026-06-08
 
 - Upgrade Sprint boot to 3.5.x
