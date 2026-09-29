@@ -11,6 +11,8 @@ See [keep a changelog](https://keepachangelog.com/en/1.1.0/) for information abo
 
 ## [Unreleased]
 
+## [0.0.5] - 2026-09-29
+
 - Added standard labels to nginx to match itkdev setup and redirect http -> https.
 
 ## [0.0.4] - 2026-06-08
@@ -31,7 +33,9 @@ See [keep a changelog](https://keepachangelog.com/en/1.1.0/) for information abo
 - First release with basic functionality
 
 
-[unreleased]: https://github.com/itk-dev/itkdev_signing_server.git/compare/v0.0.3...HEAD
+[unreleased]: https://github.com/itk-dev/itkdev_signing_server.git/compare/v0.0.5...HEAD
+[0.0.5]: https://github.com/itk-dev/itkdev_signing_server/releases/tag/0.0.5
+[0.0.4]: https://github.com/itk-dev/itkdev_signing_server/releases/tag/0.0.4
 [0.0.3]: https://github.com/itk-dev/itkdev_signing_server/releases/tag/0.0.3
 [0.0.2]: https://github.com/itk-dev/itkdev_signing_server/releases/tag/0.0.2
 [0.0.1]: https://github.com/itk-dev/itkdev_signing_server/releases/tag/0.0.1
