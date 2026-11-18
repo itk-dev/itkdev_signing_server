@@ -20,6 +20,9 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends gosu && \
     rm -rf /var/lib/apt/lists/*
 
+# CVE-2026-114938: turn off the Base64 intrinsic. Remove when the base image has the 2026-11-17 JDK fix.
+ENV JAVA_TOOL_OPTIONS="-XX:-UseBASE64Intrinsics"
+
 RUN adduser --disabled-password --gecos "" --home "/nonexistent" \
     --shell "/sbin/nologin" --no-create-home --uid 1042 appuser
 RUN mkdir -p signed-documents signers-documents temp-documents config && \
