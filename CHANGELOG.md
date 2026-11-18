@@ -11,6 +11,15 @@ See [keep a changelog](https://keepachangelog.com/en/1.1.0/) for information abo
 
 ## [Unreleased]
 
+## [0.0.7] - 2026-11-18
+
+- Set JAVA_TOOL_OPTIONS="-XX:-UseBASE64Intrinsics" in the runtime image.
+  This turns off the vulnerable AVX-512 VBMI decode path on all CPUs.
+  Attackers can reach Base64 decode without authentication through
+  /sign (forward_url) and /signing-result (result).
+- Add --pull to the docker:build and docker:push tasks. Each build then
+  gets the latest eclipse-temurin:21-jre-jammy base image.
+
 ## [0.0.6] - 2026-10-27
 
 - Switched to the maintained `nginx/nginx-unprivileged` image (replaces archived `nginxinc/nginx-unprivileged`).
