@@ -1,10 +1,10 @@
 version: '3'
 
 vars:
-  SDK_URL: https://cms.nemlog-in.dk/media/3qdj0erk/nemlogin-signsdk-java-2-0-2.zip
+  SDK_URL: https://cms.nemlog-in.dk/media/biepvwea/signsdk-java.zip
   SDK_DIR: Signing-Server
   DOCKER_IMAGE: ghcr.io/itk-dev/signing-server
-  MAVEN_IMAGE: maven:3-eclipse-temurin-21
+  MAVEN_IMAGE: maven:3-eclipse-temurin-25
   MAVEN_RUN: >-
     docker run --rm
     -v "{{.ROOT_DIR}}:/build"
@@ -31,8 +31,7 @@ tasks:
     cmds:
       - mkdir -p /tmp/sdk-download
       - curl -fSL -o /tmp/sdk-download/sdk.zip "{{.SDK_URL}}"
-      - unzip -q /tmp/sdk-download/sdk.zip -d /tmp/sdk-download/extracted
-      - mv /tmp/sdk-download/extracted/* {{.SDK_DIR}}
+      - unzip -q /tmp/sdk-download/sdk.zip -d {{.SDK_DIR}}
       - rm -rf /tmp/sdk-download
     status:
       - test -d {{.SDK_DIR}}
@@ -90,7 +89,7 @@ tasks:
         -v "{{.ROOT_DIR}}:/app"
         -w /app
         -p 8088:8088
-        eclipse-temurin:21-jre-jammy
+        eclipse-temurin:25-jre-jammy
         java -jar target/itkdev-signing-webapp-*.jar
         --spring.config.location=file:/app/config/application.yaml
 

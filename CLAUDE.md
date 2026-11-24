@@ -14,7 +14,7 @@ The landing page (`/`) serves built-in API documentation with endpoint details, 
 
 ## Build & Development Commands
 
-All commands use [Task](https://taskfile.dev/). Java/Maven run inside Docker containers (`maven:3-eclipse-temurin-21`) — no local Java installation needed. Maven dependencies are cached in a named Docker volume (`itkdev-signing-m2`).
+All commands use [Task](https://taskfile.dev/). Java/Maven run inside Docker containers (`maven:3-eclipse-temurin-25`) — no local Java installation needed. Maven dependencies are cached in a named Docker volume (`itkdev-signing-m2`).
 
 The SDK (`Signing-Server/`) must be downloaded and built first.
 
@@ -49,7 +49,7 @@ Verify with: `curl http://localhost:8088/sign?action=getcid` → `{"cid":"uuid"}
 
 ### SDK Dependency Model
 
-The app depends on the [NemLog-In Signing SDK](https://cms.nemlog-in.dk/media/3qdj0erk/nemlogin-signsdk-java-2-0-2.zip) v2.0.2 as library JARs installed to the local Maven repo. The SDK directory is gitignored. Key SDK libraries:
+The app depends on the [NemLog-In Signing SDK](https://cms.nemlog-in.dk/media/biepvwea/signsdk-java.zip) v2.0.11 as library JARs installed to the local Maven repo. The SDK directory is gitignored. Key SDK libraries:
 
 - `nemlogin-signing-spring-boot` — auto-configures `SigningPayloadService`, `SignatureKeys`, `signingClientUrl`, `entityID`, `validationServiceUrl`
 - `nemlogin-signing-pades` — PAdES PDF signing format
@@ -135,7 +135,7 @@ When working with signing internals, refer to these upstream files in `Signing-S
 
 ## Docker
 
-Two-stage Dockerfile: stage 1 builds the SDK then the webapp (`maven:3-eclipse-temurin-21`); stage 2 is the runtime (`eclipse-temurin:21-jre-jammy`) on port 8088. Config is mounted at `/app/config/application.yaml`.
+Two-stage Dockerfile: stage 1 builds the SDK then the webapp (`maven:3-eclipse-temurin-25`); stage 2 is the runtime (`eclipse-temurin:25-jre-jammy`) on port 8088. Config is mounted at `/app/config/application.yaml`.
 
 **Runtime user**: the container *starts as root* and runs `docker-entrypoint.sh`, which remaps the `appuser` UID/GID to the `PUID`/`PGID` env vars (default `1042`), `chown`s the document directories, then drops to `appuser` via `gosu` before launching the JVM. This is how host-volume permissions are kept correct — it is not a plain non-root container.
 
@@ -149,10 +149,10 @@ Both put an nginx reverse proxy (port 8080) in front of the signing server. Uplo
 
 ## Tech Stack
 
-- Java 17 language level (`<java.version>17</java.version>`), built and run on a Java 21 JDK/JRE in Docker
-- Spring Boot 3.2.1
+- Java 21 language level (`<java.version>21</java.version>`), built and run on a Java 25 JDK/JRE in Docker
+- Spring Boot 4.1.3
 - Thymeleaf templates
 - Maven build (inside Docker — no local Java required)
-- NemLog-In SignSDK v2.0.2
+- NemLog-In SignSDK v2.0.11
 - BouncyCastle security provider (registered in `Application.java`)
 - Docker with nginx reverse proxy
