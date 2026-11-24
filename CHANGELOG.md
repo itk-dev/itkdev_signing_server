@@ -11,6 +11,12 @@ See [keep a changelog](https://keepachangelog.com/en/1.1.0/) for information abo
 
 ## [Unreleased]
 
+- Upgrade the NemLog-In SignSDK from 2.0.2 to 2.0.11.
+- Upgrade Spring Boot from 3.5.14 to 4.1.3.
+  The 3.5 line gets no more open-source security fixes.
+- Build and run on Java 25 images. The Java language level is now 21.
+- Correct the sdk:download task for the new SDK zip layout.
+
 ## [0.0.7] - 2026-11-18
 
 - Set JAVA_TOOL_OPTIONS="-XX:-UseBASE64Intrinsics" in the runtime image.

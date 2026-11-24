@@ -21,7 +21,7 @@ server. For an example, see the
 - An OCES3 certificate (`.p12`) registered with NemLog-In
 
 **NOTE:** Java and Maven are not required locally. All build and run commands
-execute inside Docker containers (`maven:3-eclipse-temurin-21`). A named Docker
+execute inside Docker containers (`maven:3-eclipse-temurin-25`). A named Docker
 volume (`os2forms-signing-m2`) is used to cache Maven dependencies between
 builds.
 
@@ -45,7 +45,7 @@ task setup
 
 This performs three steps:
 
-1. Downloads and extracts the [NemLog-In Signing SDK](https://cms.nemlog-in.dk/media/3qdj0erk/nemlogin-signsdk-java-2-0-2.zip) into `Signing-Server/`
+1. Downloads and extracts the [NemLog-In Signing SDK](https://cms.nemlog-in.dk/media/biepvwea/signsdk-java.zip) into `Signing-Server/`
 2. Copies `config/application.yaml.example` to `config/application.yaml`
 3. Builds the SDK libraries and the webapp
 
@@ -223,8 +223,8 @@ image. Run `task sdk:download` first if it hasn't been downloaded yet.
 
 The Dockerfile uses a two-stage build:
 
-1. **build** — Builds the SDK libraries and the webapp (`maven:3-eclipse-temurin-21`)
-2. **final** — Runtime with minimal JRE image (`eclipse-temurin:21-jre-jammy`), runs on port 8088. The container starts as root and uses an entrypoint script with `gosu` to drop privileges to `appuser` after adjusting UID/GID at runtime (see `PUID`/`PGID` below)
+1. **build** — Builds the SDK libraries and the webapp (`maven:3-eclipse-temurin-25`)
+2. **final** — Runtime with minimal JRE image (`eclipse-temurin:25-jre-jammy`), runs on port 8088. The container starts as root and uses an entrypoint script with `gosu` to drop privileges to `appuser` after adjusting UID/GID at runtime (see `PUID`/`PGID` below)
 
 ### Docker Compose
 
@@ -344,7 +344,7 @@ Test away.
 
 ## Related Repositories
 
-- [NemLog-In Signing SDK](https://cms.nemlog-in.dk/media/3qdj0erk/nemlogin-signsdk-java-2-0-2.zip) — SignSDK v2.0.2 (build dependency)
+- [NemLog-In Signing SDK](https://cms.nemlog-in.dk/media/biepvwea/signsdk-java.zip) — SignSDK v2.0.11 (build dependency)
 - [OS2Forms digital_signature](https://github.com/OS2Forms/os2forms/tree/develop/modules/os2forms_digital_signature) — Example client integration (Drupal module)
 
 ## License

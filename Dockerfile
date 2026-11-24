@@ -1,5 +1,5 @@
 # Stage 1: Build SDK + webapp
-FROM maven:3-eclipse-temurin-21 AS build
+FROM maven:3-eclipse-temurin-25 AS build
 WORKDIR /build
 
 # Build SDK libraries first
@@ -14,7 +14,7 @@ RUN --mount=type=cache,target=/root/.m2 \
     mvn clean package -DskipTests
 
 # Stage 2: Runtime
-FROM eclipse-temurin:21-jre-jammy AS final
+FROM eclipse-temurin:25-jre-jammy AS final
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends gosu && \
